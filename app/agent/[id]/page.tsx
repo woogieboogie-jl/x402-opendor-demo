@@ -15,21 +15,48 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
+import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Play, Pause, Settings } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { getAgentById } from '@/lib/agents-data'
 import { useRouter, useParams } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { DepositModal } from '@/components/modals/deposit-modal'
 
 export default function AgentDetailPage() {
+  const { theme } = useTheme()
   const [showTxModal, setShowTxModal] = useState(false)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [selectedTx, setSelectedTx] = useState<any>(null)
   const [agent, setAgent] = useState<ReturnType<typeof getAgentById>>(undefined)
   const router = useRouter()
   const params = useParams()
+  
+  const handleTogglePause = () => {
+    if (agent) {
+      setAgent({
+        ...agent,
+        status: agent.status === 'active' ? 'paused' : 'active'
+      })
+    }
+  }
+  
+  const handleEdit = () => {
+    // Navigate to edit page or open edit modal
+    router.push(`/create?edit=${agent?.id}`)
+  }
+  
+  // Theme-aware colors for charts
+  const isDark = theme === 'dark'
+  const chartColors = {
+    grid: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
+    axis: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
+    line: isDark ? '#a78bfa' : '#8884d8', // violet-400 / purple-500
+    tooltipBg: isDark ? '#1f2937' : '#ffffff', // gray-800 / white
+    tooltipBorder: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
+    tooltipText: isDark ? '#f3f4f6' : '#111827', // gray-100 / gray-900
+    tooltipItem: isDark ? '#a78bfa' : '#8884d8', // violet-400 / purple-500
+  }
 
   useEffect(() => {
     if (params?.id && typeof params.id === 'string') {
@@ -101,15 +128,23 @@ export default function AgentDetailPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6">
-            <Button variant="ghost" asChild className="mb-4">
-              <Link href={agent.isOwned ? "/my-agents" : "/marketplace"}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to {agent.isOwned ? "My Agents" : "Marketplace"}
-              </Link>
+            <Button 
+              variant="ghost" 
+              className="mb-4"
+              onClick={() => {
+                if (agent) {
+                  router.push(agent.isOwned ? "/my-agents" : "/marketplace")
+                } else {
+                  router.push("/marketplace")
+                }
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to {agent?.isOwned ? "My Agents" : "Marketplace"}
             </Button>
             
             <div className="flex items-start justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold">{agent.name}</h1>
                   {agent.status && (
@@ -141,9 +176,36 @@ export default function AgentDetailPage() {
               <div className="flex gap-2">
                 {agent.isOwned ? (
                   <>
-                    <Button variant="outline" onClick={() => setShowDepositModal(true)}>Deposit More</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTogglePause}
+                      className="gap-2"
+                    >
+                      {agent.status === 'active' ? (
+                        <>
+                          <Pause className="h-4 w-4" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-4 w-4" />
+                          Play
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEdit}
+                      className="gap-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Edit
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowDepositModal(true)}>Deposit More</Button>
                     {agent.isPublished && (
-                      <Button variant="outline" className="text-destructive">Unpublish</Button>
+                      <Button variant="outline" size="sm" className="text-destructive">Unpublish</Button>
                     )}
                   </>
                 ) : (
@@ -222,38 +284,38 @@ export default function AgentDetailPage() {
                 {performanceData && performanceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} />
                       <XAxis 
                         dataKey="time" 
-                        stroke="#6b7280" 
+                        stroke={chartColors.axis} 
                         fontSize={12}
                         tickLine={false}
-                        axisLine={{ stroke: '#e5e7eb' }}
+                        axisLine={{ stroke: chartColors.grid }}
                       />
                       <YAxis 
-                        stroke="#6b7280" 
+                        stroke={chartColors.axis} 
                         fontSize={12}
                         tickLine={false}
-                        axisLine={{ stroke: '#e5e7eb' }}
+                        axisLine={{ stroke: chartColors.grid }}
                         domain={['auto', 'auto']}
                       />
                       <Tooltip 
                         contentStyle={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #e5e7eb',
+                          backgroundColor: chartColors.tooltipBg, 
+                          border: `1px solid ${chartColors.tooltipBorder}`,
                           borderRadius: '8px',
                           padding: '8px 12px'
                         }}
-                        labelStyle={{ color: '#111827', fontWeight: 'bold' }}
-                        itemStyle={{ color: '#8884d8' }}
+                        labelStyle={{ color: chartColors.tooltipText, fontWeight: 'bold' }}
+                        itemStyle={{ color: chartColors.tooltipItem }}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="value" 
-                        stroke="#8884d8" 
+                        stroke={chartColors.line} 
                         strokeWidth={3}
                         dot={false}
-                        activeDot={{ r: 7, fill: '#8884d8', stroke: 'white', strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
                         isAnimationActive={false}
                       />
                     </LineChart>
@@ -352,7 +414,7 @@ export default function AgentDetailPage() {
                       {agent.completedTrades.length > 0 ? (
                         agent.completedTrades.map((trade) => (
                         <TableRow key={trade.id}>
-                          <TableCell className="font-mono text-xs">{trade.date}</TableCell>
+                          <TableCell className="text-xs">{trade.date}</TableCell>
                           <TableCell className="font-medium">{trade.asset}</TableCell>
                           <TableCell>
                             <Badge variant={trade.type === 'Long' ? 'default' : 'secondary'}>
@@ -410,7 +472,7 @@ export default function AgentDetailPage() {
                           <TableCell className="font-semibold">
                             {tx.type === 'Creation' ? `${tx.amount} USDC` : `$${tx.amount.toLocaleString()}`}
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{tx.date}</TableCell>
+                          <TableCell className="text-xs">{tx.date}</TableCell>
                           <TableCell>{tx.chain}</TableCell>
                           <TableCell>
                             <button
@@ -448,7 +510,7 @@ export default function AgentDetailPage() {
                       {agent.reasoningLog.map((log) => (
                       <div key={log.id} className="border-l-2 border-primary pl-4 py-2">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="font-mono text-xs text-muted-foreground">{log.time}</p>
+                          <p className="text-xs text-muted-foreground">{log.time}</p>
                           <Badge variant="outline">{log.trigger}</Badge>
                         </div>
                         <p className="font-semibold mb-1">{log.action}</p>

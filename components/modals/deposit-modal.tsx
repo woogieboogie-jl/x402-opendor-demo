@@ -117,14 +117,14 @@ export function DepositModal({
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
-              <div>
+            <div>
                 <CardTitle>{isOwnAgent ? 'Deposit to Your Agent' : 'Deposit to Agent'}</CardTitle>
-                <CardDescription>
+              <CardDescription>
                   {step === 'details' 
                     ? `Review ${agentName} details before depositing`
                     : `Confirm payment to fund ${agentName}`
                   }
-                </CardDescription>
+              </CardDescription>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -185,11 +185,11 @@ export function DepositModal({
                 )}
               </div>
 
-              {!isOwnAgent && (
-                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-sm">
-                  You're investing in a public agent. Returns will be shared based on your deposit proportion.
-                </div>
-              )}
+          {!isOwnAgent && (
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-sm">
+              You're investing in a public agent. Returns will be shared based on your deposit proportion.
+            </div>
+          )}
 
               <Button 
                 className="w-full" 
@@ -202,61 +202,61 @@ export function DepositModal({
           ) : (
             <>
               {/* Step 2: Deposit Amount */}
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <Label htmlFor="amount">Deposit Amount (USDC)</Label>
-                <div className="relative">
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pr-16"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    USDC
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Balance: ${walletBalance.toLocaleString()} USDC</span>
-                  <div className="flex gap-1">
+            <div className="relative">
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="pr-16"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                USDC
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Balance: ${walletBalance.toLocaleString()} USDC</span>
+              <div className="flex gap-1">
                     <button onClick={() => setQuickAmount(25)} className="hover:text-foreground transition-colors">25%</button>
                     <button onClick={() => setQuickAmount(50)} className="hover:text-foreground transition-colors">50%</button>
                     <button onClick={() => setQuickAmount(75)} className="hover:text-foreground transition-colors">75%</button>
                     <button onClick={() => setQuickAmount(100)} className="hover:text-foreground transition-colors">100%</button>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
               {/* Payment Details Section - Matching Launch Modal Style */}
-              <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-                <div className="flex items-center justify-between mb-2">
+          <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+            <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Payment Details</span>
-                  <X402Badge />
-                </div>
-                <div className="flex justify-between text-sm">
+              <X402Badge />
+            </div>
+            <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Deposit Amount</span>
-                  <span className="font-semibold">{amount || '0'} USDC</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Gas Estimate</span>
-                  <span>~${gasEstimate} USDC</span>
-                </div>
-                <div className="flex justify-between text-sm pt-2 border-t">
-                  <span className="font-medium">Total</span>
-                  <span className="font-bold">{(parseFloat(amount || '0') + gasEstimate).toFixed(2)} USDC</span>
-                </div>
+              <span className="font-semibold">{amount || '0'} USDC</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Gas Estimate</span>
+              <span>~${gasEstimate} USDC</span>
+            </div>
+            <div className="flex justify-between text-sm pt-2 border-t">
+              <span className="font-medium">Total</span>
+              <span className="font-bold">{(parseFloat(amount || '0') + gasEstimate).toFixed(2)} USDC</span>
+            </div>
                 <p className="text-xs text-muted-foreground pt-2">
                   Transaction will be recorded on-chain via x402 protocol
                 </p>
-              </div>
+          </div>
 
-              <Button 
-                className="w-full" 
-                size="lg"
-                disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > walletBalance || isProcessing}
-                onClick={handleDeposit}
-              >
+          <Button 
+            className="w-full" 
+            size="lg"
+            disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > walletBalance || isProcessing}
+            onClick={handleDeposit}
+          >
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -265,7 +265,7 @@ export function DepositModal({
                 ) : (
                   'Deposit'
                 )}
-              </Button>
+          </Button>
             </>
           )}
         </CardContent>

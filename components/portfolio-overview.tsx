@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, Wallet, Activity, Bot, Target } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 
 const mockChartData = [
   { time: '00:00', value: 10000 },
@@ -38,38 +39,49 @@ const mockStats: PortfolioStats = {
 }
 
 export function PortfolioOverview() {
+  const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   
   useEffect(() => {
     setMounted(true)
-    console.log('Portfolio chart data:', mockChartData)
-    console.log('Chart data length:', mockChartData.length)
+    console.log("[v0] Portfolio chart data:", mockChartData)
   }, [])
+  
+  // Theme-aware colors for charts
+  const isDark = mounted && theme === 'dark'
+  const chartColors = {
+    grid: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
+    axis: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
+    line: isDark ? '#a78bfa' : '#8884d8', // violet-400 / purple-500
+    tooltipBg: isDark ? '#1f2937' : '#ffffff', // gray-800 / white
+    tooltipBorder: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
+    tooltipText: isDark ? '#f3f4f6' : '#111827', // gray-100 / gray-900
+  }
   
   if (!mounted) {
     return (
       <div className="mb-6">
-        <div className="grid grid-cols-3 gap-3 mb-3">
-          <Card className="px-4 py-3.5 flex flex-col">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Wallet className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Equity</p>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <Card className="p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Wallet className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total Equity</p>
             </div>
-            <p className="text-2xl font-bold leading-none">${mockStats.totalEquity.toLocaleString()}</p>
+            <p className="text-xl font-bold leading-none">${mockStats.totalEquity.toLocaleString()}</p>
           </Card>
-          <Card className="px-4 py-3.5 flex flex-col">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Activity className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Trading Equity</p>
+          <Card className="p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Activity className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Trading Equity</p>
             </div>
-            <p className="text-2xl font-bold leading-none">${mockStats.tradingEquity.toLocaleString()}</p>
+            <p className="text-xl font-bold leading-none">${mockStats.tradingEquity.toLocaleString()}</p>
           </Card>
-          <Card className="px-4 py-3.5 flex flex-col">
-            <div className="flex items-center gap-1.5 mb-2">
-              <TrendingUp className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Available Balance</p>
+          <Card className="p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Available Balance</p>
             </div>
-            <p className="text-2xl font-bold leading-none">${mockStats.availableBalance.toLocaleString()}</p>
+            <p className="text-xl font-bold leading-none">${mockStats.availableBalance.toLocaleString()}</p>
           </Card>
         </div>
         <Card className="p-4">
@@ -83,29 +95,29 @@ export function PortfolioOverview() {
   
   return (
     <div className="mb-6">
-      <div className="grid grid-cols-3 gap-3 mb-3">
-        <Card className="px-4 py-3.5 flex flex-col">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Wallet className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Equity</p>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <Card className="p-2.5">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Wallet className="h-3.5 w-3.5 text-primary" />
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total Equity</p>
           </div>
-          <p className="text-2xl font-bold leading-none">${mockStats.totalEquity.toLocaleString()}</p>
+          <p className="text-xl font-bold leading-none">${mockStats.totalEquity.toLocaleString()}</p>
         </Card>
 
-        <Card className="px-4 py-3.5 flex flex-col">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Activity className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Trading Equity</p>
+        <Card className="p-2.5">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Activity className="h-3.5 w-3.5 text-primary" />
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Trading Equity</p>
           </div>
-          <p className="text-2xl font-bold leading-none">${mockStats.tradingEquity.toLocaleString()}</p>
+          <p className="text-xl font-bold leading-none">${mockStats.tradingEquity.toLocaleString()}</p>
         </Card>
 
-        <Card className="px-4 py-3.5 flex flex-col">
-          <div className="flex items-center gap-1.5 mb-2">
-            <TrendingUp className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Available Balance</p>
+        <Card className="p-2.5">
+          <div className="flex items-center gap-1.5 mb-1">
+            <TrendingUp className="h-3.5 w-3.5 text-primary" />
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Available Balance</p>
           </div>
-          <p className="text-2xl font-bold leading-none">${mockStats.availableBalance.toLocaleString()}</p>
+          <p className="text-xl font-bold leading-none">${mockStats.availableBalance.toLocaleString()}</p>
         </Card>
       </div>
 
@@ -113,41 +125,40 @@ export function PortfolioOverview() {
         <div className="flex gap-4">
           <div className="flex-1">
             <h3 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Total Equity Performance</h3>
-            <div className="h-[200px] w-full" style={{ minHeight: '200px', position: 'relative', width: '100%' }}>
+            <div className="h-[200px] w-full">
               {mounted && mockChartData && mockChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart 
-                    data={mockChartData} 
-                    margin={{ top: 15, right: 15, left: 15, bottom: 15 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={mockChartData} margin={{ top: 15, right: 15, left: 15, bottom: 15 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} />
                     <XAxis 
                       dataKey="time" 
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
-                      stroke="#e5e7eb"
+                      tick={{ fontSize: 11, fill: chartColors.axis }}
+                      stroke={chartColors.grid}
                       tickLine={false}
                     />
                     <YAxis 
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
-                      stroke="#e5e7eb"
+                      tick={{ fontSize: 11, fill: chartColors.axis }}
+                      stroke={chartColors.grid}
                       tickLine={false}
+                      domain={['dataMin - 200', 'dataMax + 200']}
                     />
                     <Tooltip 
                       contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: chartColors.tooltipBg,
+                        border: `1px solid ${chartColors.tooltipBorder}`,
                         borderRadius: '6px',
                         fontSize: '12px',
+                        color: chartColors.tooltipText,
                       }}
                       formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#8884d8" 
+                      stroke={chartColors.line} 
                       strokeWidth={3}
                       dot={false}
-                      activeDot={{ r: 6, fill: '#8884d8', stroke: 'white', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
                       isAnimationActive={false}
                       connectNulls={true}
                     />

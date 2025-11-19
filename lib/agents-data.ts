@@ -453,6 +453,55 @@ export const allAgentsData: Record<string, AgentDetailData> = {
       { id: '8', time: '2024-10-30 22:15', trigger: 'Volume Spike', context: 'AVAX volume surge on multiple timeframes', action: 'Opened long position AVAX 3x', reasoning: 'Volume spike detected across 1h, 4h, and daily charts. Strong momentum indicator. Target $40' },
     ],
   },
+  'kol-1': {
+    id: 'kol-1',
+    name: 'Ju Ki Young Tracker',
+    creator: 'Opend\'Or Team',
+    strategy: 'Mirrors trading patterns of Ju Ki Young (CryptoQuant CEO) - tracks Bitcoin whale positions, on-chain analytics, and market sentiment signals',
+    funded: 15000,
+    pnl: 12450.75,
+    winRate: 72.3,
+    sharpeRatio: 2.9,
+    totalDeposits: 125000,
+    collateralStake: 2000,
+    investorCount: 45,
+    triggers: ['Whale Movement', 'On-chain Signal', 'Social Consensus'],
+    contexts: ['Bitcoin', 'On-chain', 'Social Oracle'],
+    status: 'active',
+    isOwned: false,
+    isPublished: true,
+    sharpeTarget: 2.5,
+    performanceData: [
+      { time: '00:00', value: 15000 },
+      { time: '04:00', value: 15200 },
+      { time: '08:00', value: 15450 },
+      { time: '12:00', value: 15780 },
+      { time: '16:00', value: 16120 },
+      { time: '20:00', value: 16350 },
+      { time: '24:00', value: 16500 },
+    ],
+    positions: [
+      { id: '1', asset: 'BTC/USD', type: 'Long', entry: 43250, current: 44120, pnl: 4350, leverage: '2x', txHash: '0xkol1...btc1' },
+      { id: '2', asset: 'BTC/USD', type: 'Long', entry: 42800, current: 44120, pnl: 6560, leverage: '3x', txHash: '0xkol2...btc2' },
+    ],
+    completedTrades: [
+      { id: '1', date: '2024-11-03 10:30', asset: 'BTC/USD', type: 'Long', entry: 43250, exit: 44120, pnl: 4350, duration: '8h 15m', txHash: '0xkol1...btc1' },
+      { id: '2', date: '2024-11-02 14:20', asset: 'BTC/USD', type: 'Long', entry: 42800, exit: 43500, pnl: 3500, duration: '12h 30m', txHash: '0xkol2...btc2' },
+      { id: '3', date: '2024-11-01 18:45', asset: 'BTC/USD', type: 'Long', entry: 42500, exit: 43200, pnl: 2800, duration: '10h 20m', txHash: '0xkol3...btc3' },
+    ],
+    transactions: [
+      { id: '1', type: 'Creation', amount: 50, date: '2024-10-15 10:00', txHash: '0xkol...init', chain: 'Ethereum' },
+      { id: '2', type: 'Deposit', amount: 15000, date: '2024-10-15 10:15', txHash: '0xkol...dep1', chain: 'Ethereum' },
+      { id: '3', type: 'Trade', amount: 4350, date: '2024-11-03 10:30', txHash: '0xkol1...btc1', chain: 'Ethereum' },
+      { id: '4', type: 'Trade', amount: 3500, date: '2024-11-02 14:20', txHash: '0xkol2...btc2', chain: 'Ethereum' },
+      { id: '5', type: 'Trade', amount: 2800, date: '2024-11-01 18:45', txHash: '0xkol3...btc3', chain: 'Ethereum' },
+    ],
+    reasoningLog: [
+      { id: '1', time: '2024-11-03 10:30', trigger: 'Whale Movement', context: 'Ju Ki Young: Large Bitcoin whale accumulation detected - 15,000 BTC moved to cold storage', action: 'Opened long position BTC 2x', reasoning: 'Following Ju Ki Young\'s analysis: Whale accumulation pattern indicates strong bullish sentiment. Historical correlation: 80% probability of 3-5% price increase within 24h' },
+      { id: '2', time: '2024-11-02 14:20', trigger: 'On-chain Signal', context: 'Ju Ki Young: Exchange outflow spike - 8,500 BTC withdrawn from exchanges', action: 'Opened long position BTC 3x', reasoning: 'Social oracle signal: Exchange outflow indicates accumulation phase. Following CryptoQuant CEO\'s trading logic' },
+      { id: '3', time: '2024-11-01 18:45', trigger: 'Social Consensus', context: 'Ju Ki Young: Bitcoin MVRV ratio suggests undervaluation zone', action: 'Opened long position BTC 2x', reasoning: 'Social oracle consensus: MVRV ratio below 1.5 indicates buying opportunity. Mirroring KOL trading pattern' },
+    ],
+  },
 }
 
 // Get agent by ID
@@ -490,21 +539,35 @@ export function getUserAgents(): AgentCardProps[] {
 export function getPublicAgents(): AgentCardProps[] {
   return Object.values(allAgentsData)
     .filter(agent => agent.isPublished)
-    .map(agent => ({
-      id: agent.id,
-      name: agent.name,
-      creator: agent.creator,
-      strategy: agent.strategy,
-      funded: agent.funded,
-      pnl: agent.pnl,
-      winRate: agent.winRate,
-      sharpeRatio: agent.sharpeRatio,
-      totalDeposits: agent.totalDeposits,
-      collateralStake: agent.collateralStake,
-      investorCount: agent.investorCount,
-      triggers: agent.triggers,
-      contexts: agent.contexts,
-      performanceData: agent.performanceData.map(p => ({ time: 'time' in p ? p.time : p.date, value: p.value })),
-    }))
+    .map(agent => {
+      // Check if this is a KOL agent - only Ju Ki Young Tracker
+      const isKOL = agent.id === 'kol-1' || agent.name === 'Ju Ki Young Tracker'
+      const kolName = isKOL ? 'Ju Ki Young' : undefined
+      
+      return {
+        id: agent.id,
+        name: agent.name,
+        creator: agent.creator,
+        strategy: agent.strategy,
+        funded: agent.funded,
+        pnl: agent.pnl,
+        winRate: agent.winRate,
+        sharpeRatio: agent.sharpeRatio,
+        totalDeposits: agent.totalDeposits,
+        collateralStake: agent.collateralStake,
+        investorCount: agent.investorCount,
+        triggers: agent.triggers,
+        contexts: agent.contexts,
+        performanceData: agent.performanceData.map(p => ({ time: 'time' in p ? p.time : p.date, value: p.value })),
+        isKOL,
+        kolName,
+        socialOracle: isKOL ? {
+          status: 'active' as const,
+          lastUpdate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+          followerCount: 1247,
+          tradingSignals: 156,
+        } : undefined,
+      }
+    })
 }
 

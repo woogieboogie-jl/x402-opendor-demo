@@ -38,7 +38,7 @@ export default function HomePage() {
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/marketplace">
-                Explore Public Agents
+                Explore Marketplace
               </Link>
             </Button>
           </div>

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useState } from 'react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export function NavHeader() {
   const [isConnected, setIsConnected] = useState(false)
@@ -20,19 +21,20 @@ export function NavHeader() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
+            <Link href="/marketplace" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Marketplace
+            </Link>
             <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Create Agent
             </Link>
             <Link href="/my-agents" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               My Agents
             </Link>
-            <Link href="/marketplace" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Public Agents
-            </Link>
           </nav>
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {isConnected ? (
             <Button variant="outline" className="font-mono text-sm">
               {walletAddress}

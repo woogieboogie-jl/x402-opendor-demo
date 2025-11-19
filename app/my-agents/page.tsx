@@ -11,17 +11,7 @@ import { Bot, Plus } from 'lucide-react'
 import { useState } from 'react'
 
 export default function MyAgentsPage() {
-  const [agents, setAgents] = useState<AgentCardProps[]>(getUserAgents())
-
-  const handleTogglePause = (agentId: string) => {
-    setAgents(prevAgents =>
-      prevAgents.map(agent =>
-        agent.id === agentId
-          ? { ...agent, status: agent.status === 'active' ? 'paused' : 'active' as 'active' | 'paused' }
-          : agent
-      )
-    )
-  }
+  const [agents] = useState<AgentCardProps[]>(getUserAgents())
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,8 +57,7 @@ export default function MyAgentsPage() {
               {agents.map((agent) => (
                 <AgentCard 
                   key={agent.id} 
-                  {...agent} 
-                  onTogglePause={() => handleTogglePause(agent.id)}
+                  {...agent}
                 />
               ))}
             </div>

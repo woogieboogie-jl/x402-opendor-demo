@@ -3,18 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, MoreVertical, Pause, Play, Settings, Trash2, Shield, Users, ChevronDown, ChevronUp, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Shield, Users, ChevronDown, ChevronUp, CheckCircle2, Clock, XCircle, Play, Pause } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { DepositModal } from '@/components/modals/deposit-modal'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, Tooltip } from 'recharts'
+import { KOLBadge } from '@/components/kol-badge'
+import { SocialOracleStatus } from '@/components/social-oracle-status'
+import { useTheme } from 'next-themes'
+import { LineChart, Line, Area, ResponsiveContainer, YAxis } from 'recharts'
 import { Progress } from '@/components/ui/progress'
 
 export interface QualificationCriteria {
@@ -39,11 +35,10 @@ export interface AgentCardProps {
   isPublished?: boolean
   sharpeTarget?: number
   totalDeposits?: number
-  qualificationCriteria?: QualificationCriteria
-  performanceData?: Array<{ time: string; value: number }>
-  onTogglePause?: () => void
-  
-  // Public Agents specific
+          qualificationCriteria?: QualificationCriteria
+          performanceData?: Array<{ time: string; value: number }>
+          
+          // Public Agents specific
   creator?: string
   
   // Both
@@ -51,6 +46,16 @@ export interface AgentCardProps {
   investorCount?: number
   triggers?: string[]
   contexts?: string[]
+  
+  // KOL specific
+  isKOL?: boolean
+  kolName?: string
+  socialOracle?: {
+    status: 'active' | 'inactive'
+    lastUpdate: string
+    followerCount?: number
+    tradingSignals?: number
+  }
 }
 
 export function AgentCard({
@@ -69,15 +74,36 @@ export function AgentCard({
   creator,
   collateralStake,
   investorCount,
-  triggers = [],
-  contexts = [],
-  qualificationCriteria,
-  performanceData = [],
-  onTogglePause,
+          triggers = [],
+          contexts = [],
+          qualificationCriteria,
+          performanceData = [],
+          isKOL = false,
+  kolName,
+  socialOracle,
 }: AgentCardProps) {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const isReadyToPublish = isOwned && !isPublished && sharpeRatio >= sharpeTarget
   const [isQualificationExpanded, setIsQualificationExpanded] = useState(false)
   const router = useRouter()
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Theme-aware sparkline color for KOL agents
+  const getSparklineColor = () => {
+    if (pnl < 0) {
+      return '#ef4444' // red-500 for negative P&L
+    }
+    if (isKOL) {
+      return '#a78bfa' // violet-400 for KOL agents
+    }
+    // Use theme-aware accent color
+    const isDark = mounted && theme === 'dark'
+    return isDark ? '#22c55e' : '#10b981' // green-500 / green-600 for positive P&L
+  }
 
   const calculateProgress = () => {
     if (!qualificationCriteria) return 0
@@ -99,8 +125,6 @@ export function AgentCard({
       qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target,
     ].filter(Boolean).length : 0
 
-  const [showDepositModal, setShowDepositModal] = useState(false)
-
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
     if (
@@ -117,137 +141,146 @@ export function AgentCard({
 
   return (
     <Card 
-      className="overflow-hidden hover:border-primary/50 transition-all cursor-pointer group h-full"
+      className={`overflow-hidden transition-all cursor-pointer group h-full ${
+        isKOL 
+          ? 'border-2 border-purple-500/50 bg-gradient-to-br from-purple-500/5 to-violet-500/5 hover:border-purple-500/80 hover:shadow-lg hover:shadow-purple-500/20' 
+          : 'hover:border-primary/50'
+      }`}
       onClick={handleCardClick}
     >
       <CardHeader className="pb-2.5">
-        <div className="flex items-start justify-between gap-3 mb-1.5">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1.5">
-              <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors flex-1">
-                {name}
-              </CardTitle>
+        <div className="flex items-center justify-between gap-3 mb-1.5">
+          <div className="flex-1 flex items-center gap-3 min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="mb-1.5">
+                <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
+                  {name}
+                </CardTitle>
+              </div>
               
-              {performanceData && performanceData.length > 0 && (
-                <div 
-                  className="w-[100px] h-[32px] flex-shrink-0 rounded-md bg-muted/20 border border-border/30 relative overflow-hidden group/sparkline"
-                  style={{ minWidth: '100px', minHeight: '32px' }}
-                  onMouseEnter={() => console.log('Sparkline data:', performanceData, 'Length:', performanceData.length)}
-                >
-                  {/* Glow effect on hover */}
-                  <div 
-                    className={`absolute -inset-1 opacity-0 group-hover/sparkline:opacity-60 transition-opacity duration-300 rounded-md ${
-                      pnl >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'
-                    }`}
-                    style={{ 
-                      filter: 'blur(6px)',
-                      zIndex: 0,
-                    }}
-                  />
-                  <div className="relative z-10 w-full h-full">
-                    <ResponsiveContainer width={100} height={32}>
-                      <LineChart data={performanceData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <XAxis 
-                          dataKey="time" 
-                          hide 
-                        />
-                        <YAxis 
-                          hide 
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="value" 
-                          stroke={pnl >= 0 ? '#10b981' : '#ef4444'} 
-                          strokeWidth={2.5}
-                          dot={false}
-                          isAnimationActive={false}
-                          connectNulls={true}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {creator && <span className="text-xs text-muted-foreground">by {creator}</span>}
-              
-              {isOwned && status && (
-                <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] py-0 px-1.5 h-5">
-                  {status === 'active' ? (
-                    <>
-                      <Play className="mr-1 h-2.5 w-2.5" />
-                      Active
-                    </>
-                  ) : (
-                    <>
-                      <Pause className="mr-1 h-2.5 w-2.5" />
-                      Paused
-                    </>
-                  )}
-                </Badge>
-              )}
-              
-              {isPublished && (
-                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-[10px] py-0 px-1.5 h-5">
-                  Public
-                </Badge>
-              )}
-              
-              {isReadyToPublish && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 h-5">
-                  Ready to Publish
-                </Badge>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1.5">
-            {isOwned && onTogglePause && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onTogglePause()
-                }}
-              >
-                {status === 'active' ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {isKOL && <KOLBadge kolName={kolName} className="text-[10px] py-0.5 px-2 h-5" />}
+                {creator && <span className="text-xs text-muted-foreground">by {creator}</span>}
+                
+                {isOwned && status && (
+                  <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] py-0 px-1.5 h-5">
+                    {status === 'active' ? (
+                      <>
+                        <Play className="mr-1 h-2.5 w-2.5" />
+                        Active
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="mr-1 h-2.5 w-2.5" />
+                        Paused
+                      </>
+                    )}
+                  </Badge>
                 )}
-              </Button>
-            )}
+                
+                {isPublished && (
+                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-[10px] py-0 px-1.5 h-5">
+                    Public
+                  </Badge>
+                )}
+                
+                {isReadyToPublish && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 h-5">
+                    Ready to Publish
+                  </Badge>
+                )}
+              </div>
+            </div>
             
-            {isOwned && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Edit Strategy
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                    <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                    Delete Agent
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {performanceData.length > 0 && (
+              <div className="flex-shrink-0 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] flex items-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={performanceData} 
+                    margin={{ top: 6, right: 4, left: 2, bottom: 6 }}
+                  >
+                    <defs>
+                      <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={getSparklineColor()} stopOpacity={0.5} />
+                        <stop offset="40%" stopColor={getSparklineColor()} stopOpacity={0.2} />
+                        <stop offset="70%" stopColor={getSparklineColor()} stopOpacity={0.05} />
+                        <stop offset="100%" stopColor={getSparklineColor()} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id={`line-fade-${id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={getSparklineColor()} stopOpacity={1} />
+                        <stop offset="60%" stopColor={getSparklineColor()} stopOpacity={1} />
+                        <stop offset="85%" stopColor={getSparklineColor()} stopOpacity={0.6} />
+                        <stop offset="100%" stopColor={getSparklineColor()} stopOpacity={0.2} />
+                      </linearGradient>
+                      <filter id={`glow-${id}`}>
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <YAxis 
+                      hide 
+                      domain={['dataMin - (dataMax - dataMin) * 0.15', 'dataMax + (dataMax - dataMin) * 0.15']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      fill={`url(#gradient-${id})`}
+                      stroke="none"
+                      isAnimationActive={true}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={`url(#line-fade-${id})`}
+                      strokeWidth={2.5}
+                      dot={(props: any) => {
+                        const { cx, cy, payload, index } = props
+                        // Only show dot at the last data point
+                        if (index === performanceData.length - 1) {
+                          return (
+                            <g key={`dot-${index}`}>
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                r={5}
+                                fill={getSparklineColor()}
+                                stroke="white"
+                                strokeWidth={2.5}
+                                filter={`url(#glow-${id})`}
+                                opacity={1}
+                              />
+                            </g>
+                          )
+                        }
+                        return null
+                      }}
+                      activeDot={{
+                        r: 5,
+                        fill: getSparklineColor(),
+                        stroke: 'white',
+                        strokeWidth: 2.5,
+                        filter: `url(#glow-${id})`
+                      }}
+                      isAnimationActive={true}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             )}
-          </div>
+                  </div>
         </div>
         
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{strategy}</p>
+          
+          {isKOL && socialOracle && (
+            <div className="mt-2">
+              <SocialOracleStatus {...socialOracle} />
+            </div>
+          )}
           
           {(triggers.length > 0 || contexts.length > 0) && (
             <div className="flex flex-wrap gap-1">
@@ -551,7 +584,7 @@ export function AgentCard({
               className="flex-1 h-8 text-xs" 
               onClick={(e) => {
                 e.stopPropagation()
-                setShowDepositModal(true)
+                // Handle deposit action
               }}
             >
               Deposit
@@ -559,24 +592,6 @@ export function AgentCard({
           )}
         </div>
       </CardContent>
-
-      {showDepositModal && (
-        <DepositModal
-          agentName={name}
-          agentStrategy={strategy}
-          agentTrigger={triggers && triggers.length > 0 ? triggers[0] : undefined}
-          agentContexts={contexts}
-          agentPnl={pnl}
-          agentSharpeRatio={sharpeRatio}
-          agentWinRate={winRate}
-          isOwnAgent={isOwned}
-          onClose={() => setShowDepositModal(false)}
-          onSuccess={() => {
-            setShowDepositModal(false)
-            // Optionally refresh or show success message
-          }}
-        />
-      )}
     </Card>
   )
 }

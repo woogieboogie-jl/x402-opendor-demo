@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts'
+import { useState, useEffect, useMemo } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { TrendingUp, ExternalLink } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { getPublicAgents } from '@/lib/agents-data'
 
 interface AgentData {
   id: string
@@ -16,17 +18,19 @@ interface AgentData {
   winRate: number
 }
 
-const agents: AgentData[] = [
-  { id: '1', name: 'Whale Tracker', color: '#8b5cf6', currentValue: 12287.65, sharpeRatio: 2.3, winRate: 67.5 },
-  { id: '4', name: 'Sentiment Scalper', color: '#3b82f6', currentValue: 10476.04, sharpeRatio: 2.8, winRate: 71.2 },
-  { id: '5', name: 'Breakout Hunter', color: '#f97316', currentValue: 6740.09, sharpeRatio: 2.1, winRate: 58.3 },
-  { id: '6', name: 'Volume Rider', color: '#1f2937', currentValue: 5226.24, sharpeRatio: 2.5, winRate: 64.8 },
-  { id: '7', name: 'Momentum Master', color: '#6366f1', currentValue: 4485.14, sharpeRatio: 1.9, winRate: 55.2 },
-  { id: '8', name: 'Grid Trader', color: '#10b981', currentValue: 3734.38, sharpeRatio: 1.7, winRate: 62.1 },
-]
+// Color palette for agents
+const agentColors: Record<string, string> = {
+  'kol-1': '#a855f7', // Purple for Ju Ki Young Tracker (KOL)
+  '1': '#8b5cf6', // Purple for Whale Tracker
+  '4': '#3b82f6', // Blue for Sentiment Scalper
+  '5': '#f97316', // Orange for Breakout Hunter
+  '6': '#1f2937', // Dark gray for Volume Rider
+  '7': '#6366f1', // Indigo for Momentum Master
+  '8': '#10b981', // Green for Grid Trader
+}
 
-// Generate mock historical data
-const generateChartData = () => {
+// Generate mock historical data based on actual agents
+const generateChartData = (agents: AgentData[]) => {
   const data = []
   const startDate = new Date('2024-10-18')
   const points = 150
@@ -43,7 +47,8 @@ const generateChartData = () => {
     agents.forEach((agent, agentIndex) => {
       // Different volatility and trend for each agent
       const baseValue = 10000
-      const trend = agentIndex === 1 ? 0.15 : agentIndex === 5 ? -0.35 : (agentIndex - 2) * 0.05
+      // KOL agent (Ju Ki Young) should show strong upward trend
+      const trend = agent.id === 'kol-1' ? 0.25 : agentIndex === 1 ? 0.15 : agentIndex === 5 ? -0.35 : (agentIndex - 2) * 0.05
       const volatility = 0.02 + agentIndex * 0.005
       const randomWalk = Math.random() * volatility * 2 - volatility
       
@@ -61,15 +66,16 @@ const generateChartData = () => {
   return data
 }
 
-const chartData = generateChartData()
-
 interface CustomTooltipProps {
   active?: boolean
   payload?: any[]
   label?: string
+  agents: AgentData[]
 }
 
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+const CustomTooltip = ({ active, payload, label, agents }: CustomTooltipProps) => {
+  const router = useRouter()
+  
   if (!active || !payload || payload.length === 0) return null
 
   const agent = agents.find(a => a.id === payload[0].dataKey)
@@ -101,11 +107,13 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
           </div>
         </div>
 
-        <Button asChild size="sm" className="w-full">
-          <Link href={`/agent/${agent.id}`}>
-            View Details
-            <ExternalLink className="ml-2 h-3 w-3" />
-          </Link>
+        <Button 
+          size="sm" 
+          className="w-full"
+          onClick={() => router.push(`/agent/${agent.id}`)}
+        >
+          View Details
+          <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
       </CardContent>
     </Card>
@@ -113,21 +121,48 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 }
 
 export function AgentComparisonChart() {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const [timeframe, setTimeframe] = useState<'all' | '72h'>('all')
   const [displayMode, setDisplayMode] = useState<'dollar' | 'percent'>('dollar')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Get agents from data source and map to chart format
+  const agents = useMemo(() => {
+    if (typeof window === 'undefined') return [] // Prevent SSR issues
+    const publicAgents = getPublicAgents()
+    return publicAgents.map(agent => ({
+      id: agent.id,
+      name: agent.name,
+      color: agentColors[agent.id] || `#${Math.floor(Math.random()*16777215).toString(16)}`,
+      currentValue: agent.funded + agent.pnl,
+      sharpeRatio: agent.sharpeRatio,
+      winRate: agent.winRate,
+    }))
+  }, [])
+
+  // Generate chart data based on actual agents
+  const chartData = useMemo(() => generateChartData(agents), [agents])
 
   const filteredData = timeframe === '72h' 
     ? chartData.slice(-24) 
     : chartData
+  
+  // Theme-aware colors for legend - use resolvedTheme to get actual theme (not 'system')
+  const isDark = mounted && resolvedTheme === 'dark'
+  const legendTextColor = isDark ? '#f3f4f6' : '#111827' // gray-100 / gray-900
 
   return (
-    <Card className="mb-8">
-      <CardContent className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
+    <Card className="h-full flex flex-col">
+      <CardContent className="p-6 flex flex-col flex-1">
+        <div className="mb-4 flex items-start justify-between">
+          <div className="flex-1">
             <h2 className="text-xl font-bold mb-1">Agent Performance Comparison</h2>
             <p className="text-xs text-muted-foreground">
-              Compare total account value across all public agents
+              Compare total account value across all marketplace agents
             </p>
           </div>
           <div className="flex gap-2">
@@ -170,7 +205,7 @@ export function AgentComparisonChart() {
           </div>
         </div>
 
-        <div className="h-[280px] w-full">
+        <div className="flex-1 w-full min-h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={filteredData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -180,15 +215,51 @@ export function AgentComparisonChart() {
                   const date = new Date(timestamp)
                   return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
                 }}
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                stroke="hsl(var(--border))"
+                tick={{ 
+                  fill: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
+                  fontSize: 12 
+                }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <YAxis 
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                stroke="hsl(var(--border))"
+                tick={{ 
+                  fill: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
+                  fontSize: 12 
+                }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={(props) => <CustomTooltip {...props} agents={agents} />} />
+              <Legend 
+                content={(props) => {
+                  const { payload } = props
+                  if (!payload || payload.length === 0) return null
+                  
+                  return (
+                    <div className="flex flex-wrap justify-center gap-4 pt-5">
+                      {payload.map((entry: any, index: number) => {
+                        const agent = agents.find(a => a.id === entry.dataKey)
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2"
+                          >
+                            <div
+                              className="h-0.5 w-6"
+                              style={{ backgroundColor: entry.color }}
+                            />
+                            <span className="text-xs text-gray-900 dark:text-gray-100">
+                              {agent ? agent.name : entry.dataKey}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                }}
+              />
               
               {agents.map((agent) => (
                 <Line
@@ -198,7 +269,7 @@ export function AgentComparisonChart() {
                   stroke={agent.color}
                   strokeWidth={2.5}
                   dot={false}
-                  activeDot={{ r: 6, strokeWidth: 2, stroke: 'white' }}
+                        activeDot={{ r: 6, strokeWidth: 2, stroke: (mounted && resolvedTheme === 'dark') ? '#1f2937' : 'white' }}
                 />
               ))}
             </LineChart>
