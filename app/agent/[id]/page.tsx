@@ -4,6 +4,7 @@ import { NavHeader } from '@/components/nav-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
 import { X402Badge } from '@/components/x402-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -16,51 +17,82 @@ import {
 } from "@/components/ui/table"
 import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { getAgentById } from '@/lib/agents-data'
+import { useRouter, useParams } from 'next/navigation'
+import { DepositModal } from '@/components/modals/deposit-modal'
 
-const performanceData = [
-  { time: '00:00', value: 5000 },
-  { time: '04:00', value: 5120 },
-  { time: '08:00', value: 5240 },
-  { time: '12:00', value: 5180 },
-  { time: '16:00', value: 5340 },
-  { time: '20:00', value: 5487 },
-]
-
-const positions = [
-  { id: '1', asset: 'BTC/USD', type: 'Long', entry: 42350, current: 43120, pnl: 770, leverage: '3x', txHash: '0x1234...5678' },
-  { id: '2', asset: 'ETH/USD', type: 'Short', entry: 3250, current: 3180, pnl: 210, leverage: '2x', txHash: '0xabcd...ef01' },
-]
-
-const completedTrades = [
-  { id: '1', date: '2024-01-15 14:32', asset: 'BTC/USD', type: 'Long', entry: 41200, exit: 42100, pnl: 900, duration: '4h 23m', txHash: '0x9876...5432' },
-  { id: '2', date: '2024-01-15 08:15', asset: 'SOL/USD', type: 'Short', entry: 98.5, exit: 95.2, pnl: 198, duration: '2h 15m', txHash: '0xfedc...ba98' },
-  { id: '3', date: '2024-01-14 22:45', asset: 'ETH/USD', type: 'Long', entry: 3100, exit: 3080, pnl: -120, duration: '6h 12m', txHash: '0x1111...2222' },
-]
-
-const transactions = [
-  { id: '1', type: 'Creation', amount: 10, date: '2024-01-10 10:00', txHash: '0xaaaa...bbbb', chain: 'Ethereum' },
-  { id: '2', type: 'Deposit', amount: 5000, date: '2024-01-10 10:15', txHash: '0xcccc...dddd', chain: 'Ethereum' },
-  { id: '3', type: 'Trade', amount: 900, date: '2024-01-15 14:32', txHash: '0x9876...5432', chain: 'Ethereum' },
-  { id: '4', type: 'Deposit', amount: 240, date: '2024-01-14 16:20', txHash: '0xeeee...ffff', chain: 'Ethereum' },
-]
-
-const reasoningLog = [
-  { id: '1', time: '2024-01-15 14:32', trigger: 'Volume Spike', context: 'On-chain whale movement detected', action: 'Opened long position BTC 3x leverage', reasoning: 'Large wallet transferred 1000 BTC to exchange, historically precedes price increase' },
-  { id: '2', time: '2024-01-15 08:15', trigger: 'Price Movement', context: 'SOL broke resistance', action: 'Opened short position SOL 2x', reasoning: 'Price hit overbought RSI levels combined with decreasing volume' },
-]
-
-export default function AgentDetailPage({ params }: { params: { id: string } }) {
+export default function AgentDetailPage() {
   const [showTxModal, setShowTxModal] = useState(false)
+  const [showDepositModal, setShowDepositModal] = useState(false)
   const [selectedTx, setSelectedTx] = useState<any>(null)
+  const [agent, setAgent] = useState<ReturnType<typeof getAgentById>>(undefined)
+  const router = useRouter()
+  const params = useParams()
+
+  useEffect(() => {
+    if (params?.id && typeof params.id === 'string') {
+      console.log('Fetching agent with ID:', params.id)
+      const agentData = getAgentById(params.id)
+      console.log('Agent data found:', agentData ? 'Yes' : 'No', agentData)
+      setAgent(agentData)
+    }
+  }, [params?.id])
+  
+  if (!params?.id) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mx-auto max-w-7xl">
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <p className="text-muted-foreground">Loading...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!agent) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavHeader />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mx-auto max-w-7xl">
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <h3 className="mb-2 text-xl font-semibold">Agent not found</h3>
+                <p className="mb-6 text-center text-muted-foreground">
+                  The agent you're looking for doesn't exist.
+                </p>
+                <Button onClick={() => router.push('/my-agents')}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to My Agents
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   const handleTxClick = (tx: any) => {
     setSelectedTx(tx)
     setShowTxModal(true)
   }
 
-  console.log("[v0] Agent detail chart data:", performanceData)
+  // Normalize performance data format
+  const performanceData = agent?.performanceData && agent.performanceData.length > 0
+    ? agent.performanceData.map(p => ({
+        time: 'time' in p ? p.time : p.date,
+        value: p.value
+      }))
+    : []
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,33 +102,53 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
         <div className="mx-auto max-w-7xl">
           <div className="mb-6">
             <Button variant="ghost" asChild className="mb-4">
-              <Link href="/my-agents">
+              <Link href={agent.isOwned ? "/my-agents" : "/marketplace"}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to My Agents
+                Back to {agent.isOwned ? "My Agents" : "Marketplace"}
               </Link>
             </Button>
             
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold">Whale Tracker</h1>
-                  <Badge variant="default">Active</Badge>
-                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
-                    Public
-                  </Badge>
+                  <h1 className="text-3xl font-bold">{agent.name}</h1>
+                  {agent.status && (
+                    <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
+                      {agent.status === 'active' ? 'Active' : 'Paused'}
+                    </Badge>
+                  )}
+                  {agent.isPublished && (
+                    <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                      Public
+                    </Badge>
+                  )}
+                  {agent.creator && (
+                    <span className="text-sm text-muted-foreground">by {agent.creator}</span>
+                  )}
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Follows large on-chain movements and executes counter-trend trades with 2-5x leverage
+                  {agent.strategy}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">Volume Spike</Badge>
-                  <Badge variant="outline">On-chain Context</Badge>
-                  <Badge variant="outline">Market Context</Badge>
+                  {agent.triggers.map(trigger => (
+                    <Badge key={trigger} variant="outline">{trigger}</Badge>
+                  ))}
+                  {agent.contexts.map(context => (
+                    <Badge key={context} variant="outline">{context}</Badge>
+                  ))}
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline">Deposit More</Button>
-                <Button variant="outline" className="text-destructive">Unpublish</Button>
+                {agent.isOwned ? (
+                  <>
+                    <Button variant="outline" onClick={() => setShowDepositModal(true)}>Deposit More</Button>
+                    {agent.isPublished && (
+                      <Button variant="outline" className="text-destructive">Unpublish</Button>
+                    )}
+                  </>
+                ) : (
+                  <Button onClick={() => setShowDepositModal(true)}>Deposit to Agent</Button>
+                )}
               </div>
             </div>
           </div>
@@ -107,8 +159,10 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                 <CardDescription>Funded Amount</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">$5,240</p>
-                <p className="text-xs text-muted-foreground mt-1">Total deposits: $15,640</p>
+                <p className="text-2xl font-bold">${agent.funded.toLocaleString()}</p>
+                {agent.totalDeposits && (
+                  <p className="text-xs text-muted-foreground mt-1">Total deposits: ${agent.totalDeposits.toLocaleString()}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -118,8 +172,14 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-accent" />
-                  <p className="text-2xl font-bold text-accent">+$1,247.32</p>
+                  {agent.pnl >= 0 ? (
+                    <TrendingUp className="h-5 w-5 text-accent" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-destructive" />
+                  )}
+                  <p className={`text-2xl font-bold ${agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                    {agent.pnl >= 0 ? '+' : ''}${agent.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -129,18 +189,26 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                 <CardDescription>Sharpe Ratio</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">2.3</p>
-                <p className="text-xs text-accent mt-1">Above 2.0 target</p>
+                <p className="text-2xl font-bold">{agent.sharpeRatio.toFixed(2)}</p>
+                {agent.sharpeTarget && agent.sharpeRatio >= agent.sharpeTarget && (
+                  <p className="text-xs text-accent mt-1">Above {agent.sharpeTarget.toFixed(1)} target</p>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>Collateral Stake</CardDescription>
+                <CardDescription>{agent.collateralStake ? 'Collateral Stake' : 'Win Rate'}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">$500</p>
-                <p className="text-xs text-muted-foreground mt-1">USDC locked</p>
+                {agent.collateralStake ? (
+                  <>
+                    <p className="text-2xl font-bold">${agent.collateralStake.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground mt-1">USDC locked</p>
+                  </>
+                ) : (
+                  <p className="text-2xl font-bold">{agent.winRate}%</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -151,44 +219,50 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
             </CardHeader>
             <CardContent>
               <div className="h-[320px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="hsl(var(--muted-foreground))" 
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))" 
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                      domain={['dataMin - 100', 'dataMax + 100']}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        padding: '8px 12px'
-                      }}
-                      labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
-                      itemStyle={{ color: 'hsl(var(--primary))' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 7, fill: 'hsl(var(--primary))', stroke: 'white', strokeWidth: 2 }}
-                      isAnimationActive={true}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {performanceData && performanceData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                      <XAxis 
+                        dataKey="time" 
+                        stroke="#6b7280" 
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        stroke="#6b7280" 
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        domain={['auto', 'auto']}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#ffffff', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '8px 12px'
+                        }}
+                        labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+                        itemStyle={{ color: '#8884d8' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#8884d8" 
+                        strokeWidth={3}
+                        dot={false}
+                        activeDot={{ r: 7, fill: '#8884d8', stroke: 'white', strokeWidth: 2 }}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No performance data available</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -221,7 +295,8 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {positions.map((pos) => (
+                      {agent.positions.length > 0 ? (
+                        agent.positions.map((pos) => (
                         <TableRow key={pos.id}>
                           <TableCell className="font-medium">{pos.asset}</TableCell>
                           <TableCell>
@@ -239,7 +314,14 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                             <X402Badge onClick={() => handleTxClick({ txHash: pos.txHash, type: 'Trade' })} />
                           </TableCell>
                         </TableRow>
-                      ))}
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                            No open positions
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -267,7 +349,8 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {completedTrades.map((trade) => (
+                      {agent.completedTrades.length > 0 ? (
+                        agent.completedTrades.map((trade) => (
                         <TableRow key={trade.id}>
                           <TableCell className="font-mono text-xs">{trade.date}</TableCell>
                           <TableCell className="font-medium">{trade.asset}</TableCell>
@@ -286,7 +369,14 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                             <X402Badge onClick={() => handleTxClick({ txHash: trade.txHash, type: 'Trade', amount: trade.pnl })} />
                           </TableCell>
                         </TableRow>
-                      ))}
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                            No completed trades
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -311,7 +401,8 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactions.map((tx) => (
+                      {agent.transactions.length > 0 ? (
+                        agent.transactions.map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell>
                             <Badge variant="outline">{tx.type}</Badge>
@@ -331,7 +422,14 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                             </button>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No transactions
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -345,8 +443,9 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                   <CardDescription>Decision-making process and trade rationale</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {reasoningLog.map((log) => (
+                  {agent.reasoningLog.length > 0 ? (
+                    <div className="space-y-4">
+                      {agent.reasoningLog.map((log) => (
                       <div key={log.id} className="border-l-2 border-primary pl-4 py-2">
                         <div className="flex items-center justify-between mb-2">
                           <p className="font-mono text-xs text-muted-foreground">{log.time}</p>
@@ -360,8 +459,13 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                           <span className="font-medium">Reasoning:</span> {log.reasoning}
                         </p>
                       </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      No reasoning logs available
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -402,10 +506,24 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
           </Card>
         </div>
       )}
+
+      {showDepositModal && agent && (
+        <DepositModal
+          agentName={agent.name}
+          agentStrategy={agent.strategy}
+          agentTrigger={agent.triggers[0]}
+          agentContexts={agent.contexts}
+          agentPnl={agent.pnl}
+          agentSharpeRatio={agent.sharpeRatio}
+          agentWinRate={agent.winRate}
+          isOwnAgent={agent.isOwned || false}
+          onClose={() => setShowDepositModal(false)}
+          onSuccess={() => {
+            setShowDepositModal(false)
+            // Optionally refresh agent data or show success message
+          }}
+        />
+      )}
     </div>
   )
-}
-
-function Label({ children, className }: { children: React.ReactNode, className?: string }) {
-  return <label className={className}>{children}</label>
 }

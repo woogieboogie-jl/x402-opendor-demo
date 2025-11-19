@@ -7,13 +7,14 @@ import { TrendingUp, TrendingDown, MoreVertical, Pause, Play, Settings, Trash2, 
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { DepositModal } from '@/components/modals/deposit-modal'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, Tooltip } from 'recharts'
 import { Progress } from '@/components/ui/progress'
 
 export interface QualificationCriteria {
@@ -98,6 +99,8 @@ export function AgentCard({
       qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target,
     ].filter(Boolean).length : 0
 
+  const [showDepositModal, setShowDepositModal] = useState(false)
+
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
     if (
@@ -121,24 +124,50 @@ export function AgentCard({
         <div className="flex items-start justify-between gap-3 mb-1.5">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1.5">
-              <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
+              <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors flex-1">
                 {name}
               </CardTitle>
               
-              {performanceData.length > 0 && (
-                <div className="w-[120px] h-[40px] flex-shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={performanceData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <Line 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke={pnl >= 0 ? 'hsl(var(--accent))' : 'hsl(var(--destructive))'} 
-                        strokeWidth={2}
-                        dot={false}
-                        isAnimationActive={true}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+              {performanceData && performanceData.length > 0 && (
+                <div 
+                  className="w-[100px] h-[32px] flex-shrink-0 rounded-md bg-muted/20 border border-border/30 relative overflow-hidden group/sparkline"
+                  style={{ minWidth: '100px', minHeight: '32px' }}
+                  onMouseEnter={() => console.log('Sparkline data:', performanceData, 'Length:', performanceData.length)}
+                >
+                  {/* Glow effect on hover */}
+                  <div 
+                    className={`absolute -inset-1 opacity-0 group-hover/sparkline:opacity-60 transition-opacity duration-300 rounded-md ${
+                      pnl >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'
+                    }`}
+                    style={{ 
+                      filter: 'blur(6px)',
+                      zIndex: 0,
+                    }}
+                  />
+                  <div className="relative z-10 w-full h-full">
+                    <ResponsiveContainer width={100} height={32}>
+                      <LineChart data={performanceData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                        <XAxis 
+                          dataKey="time" 
+                          hide 
+                        />
+                        <YAxis 
+                          hide 
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke={pnl >= 0 ? '#10b981' : '#ef4444'} 
+                          strokeWidth={2.5}
+                          dot={false}
+                          isAnimationActive={false}
+                          connectNulls={true}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               )}
             </div>
@@ -522,7 +551,7 @@ export function AgentCard({
               className="flex-1 h-8 text-xs" 
               onClick={(e) => {
                 e.stopPropagation()
-                // Handle deposit action
+                setShowDepositModal(true)
               }}
             >
               Deposit
@@ -530,6 +559,24 @@ export function AgentCard({
           )}
         </div>
       </CardContent>
+
+      {showDepositModal && (
+        <DepositModal
+          agentName={name}
+          agentStrategy={strategy}
+          agentTrigger={triggers && triggers.length > 0 ? triggers[0] : undefined}
+          agentContexts={contexts}
+          agentPnl={pnl}
+          agentSharpeRatio={sharpeRatio}
+          agentWinRate={winRate}
+          isOwnAgent={isOwned}
+          onClose={() => setShowDepositModal(false)}
+          onSuccess={() => {
+            setShowDepositModal(false)
+            // Optionally refresh or show success message
+          }}
+        />
+      )}
     </Card>
   )
 }

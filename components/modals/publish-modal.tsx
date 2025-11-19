@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { X402Badge } from '@/components/x402-badge'
 import { X, CheckCircle, AlertCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface PublishModalProps {
   agentName: string
@@ -43,6 +43,15 @@ export function PublishModal({
     setIsSuccess(true)
     setIsProcessing(false)
   }
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = originalStyle
+    }
+  }, [])
 
   if (isSuccess) {
     return (

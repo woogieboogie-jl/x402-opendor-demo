@@ -13,77 +13,16 @@ import {
 } from "@/components/ui/select"
 import { AgentComparisonChart } from '@/components/agent-comparison-chart'
 import { AgentCard, AgentCardProps } from '@/components/agent-card'
+import { getPublicAgents } from '@/lib/agents-data'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
-
-const mockPublicAgents: AgentCardProps[] = [
-  {
-    id: '1',
-    name: 'Whale Tracker',
-    creator: '0x742d...4e89',
-    strategy: 'Follows large on-chain movements and executes counter-trend trades with 2-5x leverage',
-    funded: 5240,
-    pnl: 8247.32,
-    winRate: 67.5,
-    sharpeRatio: 2.3,
-    totalDeposits: 45640,
-    collateralStake: 500,
-    investorCount: 12,
-    triggers: ['Volume Spike'],
-    contexts: ['On-chain', 'Market'],
-  },
-  {
-    id: '4',
-    name: 'Sentiment Scalper',
-    creator: '0x8f3a...2b1c',
-    strategy: 'Analyzes social sentiment across Twitter and Reddit, scalps quick moves on trending tokens',
-    funded: 0,
-    pnl: 12450.18,
-    winRate: 71.2,
-    sharpeRatio: 2.8,
-    totalDeposits: 67320,
-    collateralStake: 1000,
-    investorCount: 24,
-    triggers: ['Social Signal'],
-    contexts: ['Social', 'Market'],
-  },
-  {
-    id: '5',
-    name: 'Breakout Hunter',
-    creator: '0x6d2e...9a4f',
-    strategy: 'Identifies technical breakout patterns and rides momentum with trailing stops',
-    funded: 0,
-    pnl: 5630.92,
-    winRate: 58.3,
-    sharpeRatio: 2.1,
-    totalDeposits: 32180,
-    collateralStake: 350,
-    investorCount: 8,
-    triggers: ['Price Movement'],
-    contexts: ['Market'],
-  },
-  {
-    id: '6',
-    name: 'Volume Rider',
-    creator: '0x1a5c...7e3d',
-    strategy: 'Enters positions when unusual volume spikes occur across multiple timeframes',
-    funded: 0,
-    pnl: 9872.45,
-    winRate: 64.8,
-    sharpeRatio: 2.5,
-    totalDeposits: 51200,
-    collateralStake: 750,
-    investorCount: 16,
-    triggers: ['Volume Spike'],
-    contexts: ['Market', 'On-chain'],
-  },
-]
 
 export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState('sharpe')
   const [searchQuery, setSearchQuery] = useState('')
+  const publicAgents = getPublicAgents()
 
-  const sortedAgents = [...mockPublicAgents].sort((a, b) => {
+  const sortedAgents = [...publicAgents].sort((a, b) => {
     switch (sortBy) {
       case 'sharpe':
         return b.sharpeRatio - a.sharpeRatio
@@ -108,7 +47,7 @@ export default function MarketplacePage() {
       <NavHeader />
       
       <main className="container mx-auto px-4 py-8 flex justify-center items-start">
-        <div className="w-full max-w-7xl">
+        <div className="w-full max-w-6xl">
           <div className="mb-8">
             <h1 className="mb-2 text-3xl font-bold leading-tight">Public Agents Marketplace</h1>
             <p className="text-muted-foreground">
