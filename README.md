@@ -14,7 +14,7 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 The Project is Live at:
 
-**[https://x402-opendor-demo.vercel.app](https://x402-opendor-demo.vercel)**
+**[https://x402-opendor-demo.vercel.app](https://x402-opendor-demo.vercel.app)**
 
 
 ## How It Works
