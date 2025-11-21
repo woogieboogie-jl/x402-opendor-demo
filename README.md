@@ -12,15 +12,10 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 ## Deployment
 
-Your project is live at:
+The Project is Live at:
 
-**[https://vercel.com/phenixnetjl-5223s-projects/v0-agent-dashboard-design](https://vercel.com/phenixnetjl-5223s-projects/v0-agent-dashboard-design)**
+**[https://x402-opendor-demo.vercel.app](https://x402-opendor-demo.vercel)**
 
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/rh0GpziwJ2b](https://v0.app/chat/rh0GpziwJ2b)**
 
 ## How It Works
 
