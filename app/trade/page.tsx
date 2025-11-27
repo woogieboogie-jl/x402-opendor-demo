@@ -85,16 +85,16 @@ export default function TradePage() {
       
       <main className="flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 container mx-auto px-4 py-4">
+        <div className="flex-shrink-0 container mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
             <div>
-              <h1 className="text-2xl font-bold">Manual Trading</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold">Manual Trading</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Professional trading terminal with advanced order management
               </p>
             </div>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-[10px] sm:text-xs">
               Demo Mode
             </Badge>
             </div>
@@ -102,17 +102,17 @@ export default function TradePage() {
         </div>
 
         {/* Main Trading Interface - Flex Layout */}
-         <div className="container mx-auto px-4 pb-4">
-           <div className="max-w-6xl mx-auto flex gap-4" style={{ minHeight: 'calc(100vh - 140px)' }}>
+         <div className="container mx-auto px-2 sm:px-4 pb-4">
+           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-2 sm:gap-4" style={{ minHeight: 'calc(100vh - 140px)' }}>
           
           {/* Left + Center Area */}
-          <div className="flex-1 flex flex-col gap-4 min-h-0">
+          <div className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0">
             
             {/* Top Section - Chart and Market List */}
-            <div className="flex gap-4" style={{ height: '700px' }}>
+            <div className="flex flex-col lg:flex-row gap-2 sm:gap-4 h-[400px] sm:h-[500px] lg:h-[700px]">
               
-              {/* Left Panel - Market List */}
-              <div className={`transition-all duration-300 ${isMarketListVisible ? 'w-64' : 'w-12'} flex-shrink-0 relative`} style={{ paddingRight: '12px' }}>
+              {/* Left Panel - Market List - Hidden on mobile, collapsible on tablet+ */}
+              <div className={`hidden md:block transition-all duration-300 ${isMarketListVisible ? 'w-full md:w-64' : 'w-12'} flex-shrink-0 relative`} style={{ paddingRight: '12px' }}>
                 <MarketList 
                   selectedAsset={selectedAsset}
                   onAssetSelect={setSelectedAsset}
@@ -121,8 +121,22 @@ export default function TradePage() {
                 />
               </div>
 
+              {/* Mobile Market Selector - Only visible on mobile */}
+              <div className="md:hidden mb-2">
+                <Select value={selectedAsset} onValueChange={setSelectedAsset}>
+                  <SelectTrigger className="w-full h-9 text-sm font-sans">
+                    <SelectValue placeholder="Select Market" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['ETH-PERP', 'BTC-PERP', 'SOL-PERP', 'AVAX-PERP', 'MATIC-PERP', 'LINK-PERP', 'UNI-PERP', 'AAVE-PERP', 'COMP-PERP', 'MKR-PERP', 'DOGE-PERP', 'SHIB-PERP', 'ADA-PERP', 'DOT-PERP', 'ATOM-PERP'].map((symbol) => (
+                      <SelectItem key={symbol} value={symbol}>{symbol}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Center Panel - Trading Chart */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 min-h-[300px] sm:min-h-[400px]">
                 <TradingChart selectedAsset={selectedAsset} />
               </div>
             </div>
@@ -130,15 +144,15 @@ export default function TradePage() {
             {/* Bottom Panel - Trading History (Only spans left + center) - Sized for exactly 5 positions */}
             <div className="flex-shrink-0 overflow-hidden" style={{ height: positions.length > 0 ? '340px' : '120px' }}>
               <Card className="h-full flex flex-col">
-                <CardContent className="p-2 flex flex-col h-full min-h-0 overflow-hidden">
+                <CardContent className="p-1.5 sm:p-2 flex flex-col h-full min-h-0 overflow-hidden">
                   <Tabs defaultValue="positions" className="w-full h-full flex flex-col">
-                    <TabsList className="grid w-full grid-cols-6 flex-shrink-0 h-8">
-                      <TabsTrigger value="positions" className="text-[10px] py-1">Positions</TabsTrigger>
-                      <TabsTrigger value="pending" className="text-[10px] py-1">Pending</TabsTrigger>
-                      <TabsTrigger value="filled" className="text-[10px] py-1">Filled</TabsTrigger>
-                      <TabsTrigger value="history" className="text-[10px] py-1">History</TabsTrigger>
-                      <TabsTrigger value="assets" className="text-[10px] py-1">Assets</TabsTrigger>
-                      <TabsTrigger value="pnl" className="text-[10px] py-1">P&L</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 flex-shrink-0 h-8 overflow-x-auto">
+                      <TabsTrigger value="positions" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">Positions</TabsTrigger>
+                      <TabsTrigger value="pending" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">Pending</TabsTrigger>
+                      <TabsTrigger value="filled" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">Filled</TabsTrigger>
+                      <TabsTrigger value="history" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">History</TabsTrigger>
+                      <TabsTrigger value="assets" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">Assets</TabsTrigger>
+                      <TabsTrigger value="pnl" className="text-[9px] sm:text-[10px] py-1 px-1 sm:px-2">P&L</TabsTrigger>
                     </TabsList>
                   
                   <TabsContent value="positions" className="mt-1 flex flex-col h-full overflow-hidden">
@@ -146,25 +160,25 @@ export default function TradePage() {
                       <>
                         <div className="space-y-1 flex-1 overflow-y-auto">
                           {positions.slice(positionsPage * positionsPerPage, (positionsPage + 1) * positionsPerPage).map((position) => (
-                            <div key={position.id} className="flex items-center justify-between p-1.5 rounded border bg-card hover:bg-muted/50 transition-colors">
+                            <div key={position.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-1.5 rounded border bg-card hover:bg-muted/50 transition-colors gap-1.5 sm:gap-0">
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className={`text-[9px] px-1 py-0.5 h-4 ${position.side === 'long' ? 'text-green-600 border-green-200' : 'text-red-600 border-red-200'}`}>
+                                <Badge variant="outline" className={`text-[8px] sm:text-[9px] px-1 py-0.5 h-4 ${position.side === 'long' ? 'text-green-600 border-green-200' : 'text-red-600 border-red-200'}`}>
                                   {position.side.toUpperCase()}
                                 </Badge>
-                                <span className="text-[10px] font-medium font-sans">{position.symbol}</span>
-                                <span className="text-[8px] text-muted-foreground font-sans">{position.leverage}x</span>
+                                <span className="text-[9px] sm:text-[10px] font-medium font-sans">{position.symbol}</span>
+                                <span className="text-[7px] sm:text-[8px] text-muted-foreground font-sans">{position.leverage}x</span>
                               </div>
-                              <div className="flex items-center gap-3 text-[9px] font-sans">
-                                <div className="text-right">
-                                  <div className="text-muted-foreground text-[7px]">Size</div>
+                              <div className="flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[9px] font-sans overflow-x-auto">
+                                <div className="text-right flex-shrink-0">
+                                  <div className="text-muted-foreground text-[6px] sm:text-[7px]">Size</div>
                                   <div className="font-medium">{position.size}</div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-muted-foreground text-[7px]">Entry</div>
+                                <div className="text-right flex-shrink-0">
+                                  <div className="text-muted-foreground text-[6px] sm:text-[7px]">Entry</div>
                                   <div className="font-medium">${position.entryPrice}</div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-muted-foreground text-[7px]">P&L</div>
+                                <div className="text-right flex-shrink-0">
+                                  <div className="text-muted-foreground text-[6px] sm:text-[7px]">P&L</div>
                                   <div className={`font-medium ${position.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                     ${position.pnl} ({position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent}%)
                                   </div>
@@ -525,16 +539,16 @@ export default function TradePage() {
         </div>
 
         {/* Right Column - Full Height (Place Order + Order Book) - Independent */}
-        <Card className="w-80 flex-shrink-0 flex flex-col h-full">
+        <Card className="w-full lg:w-80 flex-shrink-0 flex flex-col h-auto lg:h-full mt-4 lg:mt-0">
           
           {/* Place Order Form - Dynamic Height */}
-          <CardContent className="flex-shrink-0 p-3 pb-4 border-b border-border">
+          <CardContent className="flex-shrink-0 p-2 sm:p-3 pb-3 sm:pb-4 border-b border-border">
                 <div className="space-y-2">
                   {/* Buy/Sell Toggle */}
                   <div className="grid grid-cols-2 gap-1.5">
                     <Button
                       variant={side === 'buy' ? 'default' : 'outline'}
-                      className={`h-8 text-sm font-sans font-medium transition-all ${
+                      className={`h-9 sm:h-8 text-xs sm:text-sm font-sans font-medium transition-all touch-manipulation ${
                         side === 'buy' 
                           ? 'bg-green-500 hover:bg-green-600 text-white shadow-md' 
                           : 'hover:bg-green-50 hover:text-green-600 hover:border-green-300 dark:hover:bg-green-950'
@@ -545,7 +559,7 @@ export default function TradePage() {
                     </Button>
                     <Button
                       variant={side === 'sell' ? 'default' : 'outline'}
-                      className={`h-8 text-sm font-sans font-medium transition-all ${
+                      className={`h-9 sm:h-8 text-xs sm:text-sm font-sans font-medium transition-all touch-manipulation ${
                         side === 'sell' 
                           ? 'bg-red-500 hover:bg-red-600 text-white shadow-md' 
                           : 'hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-950'
@@ -559,11 +573,11 @@ export default function TradePage() {
                   {/* Order Type and Leverage */}
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="text-[9px] text-muted-foreground mb-0.5 block font-sans">
+                      <label className="text-[8px] sm:text-[9px] text-muted-foreground mb-0.5 block font-sans">
                         Type
                       </label>
                       <Select value={orderType} onValueChange={setOrderType}>
-                        <SelectTrigger className="h-7 text-xs font-sans">
+                        <SelectTrigger className="h-8 sm:h-7 text-[11px] sm:text-xs font-sans">
                           <SelectValue placeholder="Order Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -576,11 +590,11 @@ export default function TradePage() {
                     </div>
                     
                     <div>
-                      <label className="text-[9px] text-muted-foreground mb-0.5 block font-sans">
+                      <label className="text-[8px] sm:text-[9px] text-muted-foreground mb-0.5 block font-sans">
                         Leverage
                       </label>
                       <Select value={leverage} onValueChange={setLeverage}>
-                        <SelectTrigger className="h-7 text-xs font-sans">
+                        <SelectTrigger className="h-8 sm:h-7 text-[11px] sm:text-xs font-sans">
                           <SelectValue placeholder="Leverage" />
                         </SelectTrigger>
                         <SelectContent>
@@ -599,14 +613,14 @@ export default function TradePage() {
                   {/* Price Input */}
                   {orderType !== 'market' && (
                     <div>
-                      <label className="text-[9px] text-muted-foreground mb-0.5 block font-sans">
+                      <label className="text-[8px] sm:text-[9px] text-muted-foreground mb-0.5 block font-sans">
                         {orderType === 'stop' || orderType === 'stop-limit' ? 'Stop Price' : 'Price'}
                       </label>
                       <Input
                         placeholder="0.00"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
-                        className="h-7 text-xs font-sans"
+                        className="h-8 sm:h-7 text-[11px] sm:text-xs font-sans"
                         type="number"
                         step="0.01"
                       />
@@ -616,14 +630,14 @@ export default function TradePage() {
                   {/* Stop Limit - Additional Limit Price */}
                   {orderType === 'stop-limit' && (
                     <div>
-                      <label className="text-[9px] text-muted-foreground mb-0.5 block font-sans">
+                      <label className="text-[8px] sm:text-[9px] text-muted-foreground mb-0.5 block font-sans">
                         Limit Price
                       </label>
                       <Input
                         placeholder="0.00"
                         value={limitPrice}
                         onChange={(e) => setLimitPrice(e.target.value)}
-                        className="h-7 text-xs font-sans"
+                        className="h-8 sm:h-7 text-[11px] sm:text-xs font-sans"
                         type="number"
                         step="0.01"
                       />
@@ -632,14 +646,14 @@ export default function TradePage() {
 
                   {/* Amount Input */}
                   <div>
-                    <label className="text-[9px] text-muted-foreground mb-0.5 block font-sans">
+                    <label className="text-[8px] sm:text-[9px] text-muted-foreground mb-0.5 block font-sans">
                       Amount ({selectedAsset.split('-')[0]})
                     </label>
                     <Input
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="h-7 text-xs font-sans"
+                      className="h-8 sm:h-7 text-[11px] sm:text-xs font-sans"
                       type="number"
                       step="0.0001"
                     />
@@ -652,7 +666,7 @@ export default function TradePage() {
                         key={percent}
                         variant="outline"
                         size="sm"
-                        className="h-6 text-[9px] font-sans hover:bg-primary/10"
+                        className="h-7 sm:h-6 text-[8px] sm:text-[9px] font-sans hover:bg-primary/10 touch-manipulation"
                         onClick={() => {
                           // Mock calculation - in real app would calculate based on balance
                           const mockBalance = 1000
@@ -685,7 +699,7 @@ export default function TradePage() {
 
                   {/* Place Order Button */}
                   <Button 
-                    className={`w-full h-8 text-sm font-sans font-medium transition-all shadow-md ${
+                    className={`w-full h-9 sm:h-8 text-xs sm:text-sm font-sans font-medium transition-all shadow-md touch-manipulation ${
                       side === 'buy' 
                         ? 'bg-green-500 hover:bg-green-600 hover:shadow-lg' 
                         : 'bg-red-500 hover:bg-red-600 hover:shadow-lg'
@@ -708,17 +722,17 @@ export default function TradePage() {
                     }}
                     disabled={!amount || (orderType !== 'market' && !price)}
                   >
-                    {side === 'buy' ? 'Buy' : 'Sell'} {selectedAsset}
+                    {side === 'buy' ? 'Buy' : 'Sell'} {selectedAsset.split('-')[0]}
                   </Button>
                 </div>
           </CardContent>
           
           {/* Order Book / Trade Feed - Minimum Height */}
-          <CardContent className="min-h-[300px] flex-1 p-3 pt-0 pb-0 flex flex-col min-h-0">
+          <CardContent className="min-h-[250px] sm:min-h-[300px] flex-1 p-2 sm:p-3 pt-0 pb-0 flex flex-col min-h-0">
                 <Tabs defaultValue="orderbook" className="w-full h-full flex flex-col">
-                  <TabsList className="grid w-full grid-cols-2 flex-shrink-0 mb-3">
-                    <TabsTrigger value="orderbook" className="text-xs font-sans">Order Book</TabsTrigger>
-                    <TabsTrigger value="trades" className="text-xs font-sans">Recent Trades</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 flex-shrink-0 mb-2 sm:mb-3">
+                    <TabsTrigger value="orderbook" className="text-[10px] sm:text-xs font-sans py-1.5 sm:py-1">Order Book</TabsTrigger>
+                    <TabsTrigger value="trades" className="text-[10px] sm:text-xs font-sans py-1.5 sm:py-1">Recent Trades</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="orderbook" className="flex-1 min-h-0 mt-0">

@@ -526,3 +526,81 @@ export function initializeMockData() {
     status: 'pending'
   })
 }
+
+// Portfolio calculation utilities
+export interface PortfolioMetrics {
+  totalEquity: number
+  tradingEquity: number
+  availableBalance: number
+  totalPnl: number
+  pnlPercentage: number
+  baseBalance: number // Starting balance before trading
+}
+
+// Base balance constant (starting balance)
+const BASE_BALANCE = 10000
+
+// Get portfolio metrics from current positions
+export function getPortfolioMetrics(): PortfolioMetrics {
+  initializeIfNeeded()
+  
+  // Update positions P&L first
+  const positions = updatePositionsPnL()
+  
+  // Calculate trading equity (sum of all position margins)
+  const tradingEquity = positions.reduce((sum, pos) => sum + pos.margin, 0)
+  
+  // Calculate total unrealized P&L
+  const totalPnl = positions.reduce((sum, pos) => sum + pos.pnl, 0)
+  
+  // Calculate P&L percentage (based on trading equity)
+  const pnlPercentage = tradingEquity > 0 ? (totalPnl / tradingEquity) * 100 : 0
+  
+  // Available balance = base balance - trading equity (locked in positions)
+  const availableBalance = Math.max(0, BASE_BALANCE - tradingEquity)
+  
+  // Total equity = base balance + unrealized P&L
+  const totalEquity = BASE_BALANCE + totalPnl
+  
+  return {
+    totalEquity: Number(totalEquity.toFixed(2)),
+    tradingEquity: Number(tradingEquity.toFixed(2)),
+    availableBalance: Number(availableBalance.toFixed(2)),
+    totalPnl: Number(totalPnl.toFixed(2)),
+    pnlPercentage: Number(pnlPercentage.toFixed(2)),
+    baseBalance: BASE_BALANCE
+  }
+}
+
+// Get portfolio chart data (equity over time)
+// This simulates equity changes based on trading activity
+export function getPortfolioChartData(): Array<{ time: string; value: number }> {
+  initializeIfNeeded()
+  
+  const metrics = getPortfolioMetrics()
+  const currentEquity = metrics.totalEquity
+  
+  // Generate 7 data points over 24 hours
+  // Start from base balance and gradually approach current equity
+  const dataPoints = []
+  const hours = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00']
+  const baseBalance = metrics.baseBalance
+  
+  // Calculate the change from base to current
+  const equityChange = currentEquity - baseBalance
+  
+  hours.forEach((time, index) => {
+    // Gradually interpolate from base balance to current equity
+    const progress = index / (hours.length - 1)
+    // Add some realistic variation
+    const variation = (Math.random() - 0.5) * Math.abs(equityChange) * 0.1
+    const value = baseBalance + (equityChange * progress) + variation
+    
+    dataPoints.push({
+      time,
+      value: Number(Math.max(0, value).toFixed(2))
+    })
+  })
+  
+  return dataPoints
+}
