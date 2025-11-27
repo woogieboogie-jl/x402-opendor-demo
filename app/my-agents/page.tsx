@@ -17,11 +17,11 @@ export default function MyAgentsPage() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="container mx-auto px-4 py-8 flex justify-center items-start">
-        <div className="w-full max-w-6xl">
-          <div className="mb-6 flex items-center justify-between">
+      <main className="container mx-auto px-4 py-4">
+        <div className="w-full max-w-6xl mx-auto">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="mb-1 text-3xl font-bold leading-tight">My Agents</h1>
+              <h1 className="text-2xl font-bold">My Agents</h1>
               <p className="text-sm text-muted-foreground">
                 Manage your AI trading agents and track performance
               </p>
@@ -57,7 +57,7 @@ export default function MyAgentsPage() {
               {agents.map((agent) => (
                 <AgentCard 
                   key={agent.id} 
-                  {...agent}
+                  {...agent} 
                 />
               ))}
             </div>

@@ -35,10 +35,10 @@ export interface AgentCardProps {
   isPublished?: boolean
   sharpeTarget?: number
   totalDeposits?: number
-          qualificationCriteria?: QualificationCriteria
-          performanceData?: Array<{ time: string; value: number }>
-          
-          // Public Agents specific
+  qualificationCriteria?: QualificationCriteria
+  performanceData?: Array<{ time: string; value: number }>
+  
+  // Public Agents specific
   creator?: string
   
   // Both
@@ -74,10 +74,10 @@ export function AgentCard({
   creator,
   collateralStake,
   investorCount,
-          triggers = [],
-          contexts = [],
-          qualificationCriteria,
-          performanceData = [],
+  triggers = [],
+  contexts = [],
+  qualificationCriteria,
+  performanceData = [],
           isKOL = false,
   kolName,
   socialOracle,
@@ -153,45 +153,45 @@ export function AgentCard({
           <div className="flex-1 flex items-center gap-3 min-w-0">
             <div className="flex-1 min-w-0">
               <div className="mb-1.5">
-                <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
-                  {name}
-                </CardTitle>
-              </div>
-              
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {isKOL && <KOLBadge kolName={kolName} className="text-[10px] py-0.5 px-2 h-5" />}
-                {creator && <span className="text-xs text-muted-foreground">by {creator}</span>}
-                
-                {isOwned && status && (
-                  <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] py-0 px-1.5 h-5">
-                    {status === 'active' ? (
-                      <>
-                        <Play className="mr-1 h-2.5 w-2.5" />
-                        Active
-                      </>
-                    ) : (
-                      <>
-                        <Pause className="mr-1 h-2.5 w-2.5" />
-                        Paused
-                      </>
-                    )}
-                  </Badge>
-                )}
-                
-                {isPublished && (
-                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-[10px] py-0 px-1.5 h-5">
-                    Public
-                  </Badge>
-                )}
-                
-                {isReadyToPublish && (
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 h-5">
-                    Ready to Publish
-                  </Badge>
-                )}
-              </div>
+              <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
+                {name}
+              </CardTitle>
             </div>
             
+            <div className="flex items-center gap-1.5 flex-wrap">
+                {isKOL && <KOLBadge kolName={kolName} className="text-[10px] py-0.5 px-2 h-5" />}
+              {creator && <span className="text-xs text-muted-foreground">by {creator}</span>}
+              
+              {isOwned && status && (
+                <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] py-0 px-1.5 h-5">
+                  {status === 'active' ? (
+                    <>
+                      <Play className="mr-1 h-2.5 w-2.5" />
+                      Active
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="mr-1 h-2.5 w-2.5" />
+                      Paused
+                    </>
+                  )}
+                </Badge>
+              )}
+              
+              {isPublished && (
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-[10px] py-0 px-1.5 h-5">
+                  Public
+                </Badge>
+              )}
+              
+              {isReadyToPublish && (
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 h-5">
+                  Ready to Publish
+                </Badge>
+              )}
+            </div>
+          </div>
+          
             {performanceData.length > 0 && (
               <div className="flex-shrink-0 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] flex items-center">
                 <ResponsiveContainer width="100%" height="100%">
@@ -270,7 +270,7 @@ export function AgentCard({
                 </ResponsiveContainer>
               </div>
             )}
-                  </div>
+          </div>
         </div>
         
         <div className="space-y-2">

@@ -125,12 +125,12 @@ export default function AgentDetailPage() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-6">
+      <main className="container mx-auto px-4 py-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-4">
             <Button 
               variant="ghost" 
-              className="mb-4"
+              className="mb-2"
               onClick={() => {
                 if (agent) {
                   router.push(agent.isOwned ? "/my-agents" : "/marketplace")
@@ -139,23 +139,23 @@ export default function AgentDetailPage() {
                 }
               }}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 h-4 w-4" />
               Back to {agent?.isOwned ? "My Agents" : "Marketplace"}
             </Button>
             
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold">{agent.name}</h1>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-2xl font-bold">{agent.name}</h1>
                   {agent.status && (
                     <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
                       {agent.status === 'active' ? 'Active' : 'Paused'}
                     </Badge>
                   )}
                   {agent.isPublished && (
-                    <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
-                      Public
-                    </Badge>
+                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                    Public
+                  </Badge>
                   )}
                   {agent.creator && (
                     <span className="text-sm text-muted-foreground">by {agent.creator}</span>
@@ -235,7 +235,7 @@ export default function AgentDetailPage() {
               <CardContent>
                 <div className="flex items-center gap-2">
                   {agent.pnl >= 0 ? (
-                    <TrendingUp className="h-5 w-5 text-accent" />
+                  <TrendingUp className="h-5 w-5 text-accent" />
                   ) : (
                     <TrendingDown className="h-5 w-5 text-destructive" />
                   )}
@@ -266,7 +266,7 @@ export default function AgentDetailPage() {
                 {agent.collateralStake ? (
                   <>
                     <p className="text-2xl font-bold">${agent.collateralStake.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground mt-1">USDC locked</p>
+                <p className="text-xs text-muted-foreground mt-1">USDC locked</p>
                   </>
                 ) : (
                   <p className="text-2xl font-bold">{agent.winRate}%</p>
@@ -282,44 +282,44 @@ export default function AgentDetailPage() {
             <CardContent>
               <div className="h-[320px] w-full">
                 {performanceData && performanceData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} />
-                      <XAxis 
-                        dataKey="time" 
+                    <XAxis 
+                      dataKey="time" 
                         stroke={chartColors.axis} 
-                        fontSize={12}
-                        tickLine={false}
+                      fontSize={12}
+                      tickLine={false}
                         axisLine={{ stroke: chartColors.grid }}
-                      />
-                      <YAxis 
+                    />
+                    <YAxis 
                         stroke={chartColors.axis} 
-                        fontSize={12}
-                        tickLine={false}
+                      fontSize={12}
+                      tickLine={false}
                         axisLine={{ stroke: chartColors.grid }}
                         domain={['auto', 'auto']}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
                           backgroundColor: chartColors.tooltipBg, 
                           border: `1px solid ${chartColors.tooltipBorder}`,
-                          borderRadius: '8px',
-                          padding: '8px 12px'
-                        }}
+                        borderRadius: '8px',
+                        padding: '8px 12px'
+                      }}
                         labelStyle={{ color: chartColors.tooltipText, fontWeight: 'bold' }}
                         itemStyle={{ color: chartColors.tooltipItem }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="value" 
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
                         stroke={chartColors.line} 
-                        strokeWidth={3}
-                        dot={false}
+                      strokeWidth={3}
+                      dot={false}
                         activeDot={{ r: 7, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
                         isAnimationActive={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-muted-foreground">No performance data available</p>
@@ -506,7 +506,7 @@ export default function AgentDetailPage() {
                 </CardHeader>
                 <CardContent>
                   {agent.reasoningLog.length > 0 ? (
-                    <div className="space-y-4">
+                  <div className="space-y-4">
                       {agent.reasoningLog.map((log) => (
                       <div key={log.id} className="border-l-2 border-primary pl-4 py-2">
                         <div className="flex items-center justify-between mb-2">
@@ -521,8 +521,8 @@ export default function AgentDetailPage() {
                           <span className="font-medium">Reasoning:</span> {log.reasoning}
                         </p>
                       </div>
-                      ))}
-                    </div>
+                    ))}
+                  </div>
                   ) : (
                     <div className="text-center text-muted-foreground py-8">
                       No reasoning logs available

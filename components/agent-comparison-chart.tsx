@@ -112,8 +112,8 @@ const CustomTooltip = ({ active, payload, label, agents }: CustomTooltipProps) =
           className="w-full"
           onClick={() => router.push(`/agent/${agent.id}`)}
         >
-          View Details
-          <ExternalLink className="ml-2 h-3 w-3" />
+            View Details
+            <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
       </CardContent>
     </Card>

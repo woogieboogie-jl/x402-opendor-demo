@@ -3,11 +3,13 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export function NavHeader() {
   const [isConnected, setIsConnected] = useState(false)
   const [walletAddress] = useState('0x742d...4e89')
+  const pathname = usePathname()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -21,14 +23,57 @@ export function NavHeader() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/marketplace" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link 
+              href="/marketplace" 
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === '/marketplace' 
+                  ? 'text-primary font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
               Marketplace
+              {pathname === '/marketplace' && (
+                <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
             </Link>
-            <Link href="/create" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link 
+              href="/create" 
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === '/create' 
+                  ? 'text-primary font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
               Create Agent
+              {pathname === '/create' && (
+                <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
             </Link>
-            <Link href="/my-agents" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link 
+              href="/my-agents" 
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === '/my-agents' 
+                  ? 'text-primary font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
               My Agents
+              {pathname === '/my-agents' && (
+                <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
+            </Link>
+            <Link 
+              href="/trade" 
+              className={`text-sm font-medium transition-colors relative ${
+                pathname === '/trade' 
+                  ? 'text-primary font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Manual Trading
+              {pathname === '/trade' && (
+                <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              )}
             </Link>
           </nav>
         </div>

@@ -81,13 +81,15 @@ export default function CreateAgentPage() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold">Create AI Trading Agent</h1>
-            <p className="text-muted-foreground">
-              Configure your agent's behavior by selecting triggers, context, and defining a custom strategy
-            </p>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Create AI Trading Agent</h1>
+              <p className="text-sm text-muted-foreground">
+                Configure your agent's behavior by selecting triggers, context, and defining a custom strategy
+              </p>
+            </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">

@@ -44,7 +44,7 @@ export function PortfolioOverview() {
   
   useEffect(() => {
     setMounted(true)
-    console.log("[v0] Portfolio chart data:", mockChartData)
+  console.log("[v0] Portfolio chart data:", mockChartData)
   }, [])
   
   // Theme-aware colors for charts
@@ -127,43 +127,43 @@ export function PortfolioOverview() {
             <h3 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Total Equity Performance</h3>
             <div className="h-[200px] w-full">
               {mounted && mockChartData && mockChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockChartData} margin={{ top: 15, right: 15, left: 15, bottom: 15 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={mockChartData} margin={{ top: 15, right: 15, left: 15, bottom: 15 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} />
-                    <XAxis 
-                      dataKey="time" 
+                  <XAxis 
+                    dataKey="time" 
                       tick={{ fontSize: 11, fill: chartColors.axis }}
                       stroke={chartColors.grid}
-                      tickLine={false}
-                    />
-                    <YAxis 
+                    tickLine={false}
+                  />
+                  <YAxis 
                       tick={{ fontSize: 11, fill: chartColors.axis }}
                       stroke={chartColors.grid}
-                      tickLine={false}
-                      domain={['dataMin - 200', 'dataMax + 200']}
-                    />
-                    <Tooltip 
-                      contentStyle={{
+                    tickLine={false}
+                    domain={['dataMin - 200', 'dataMax + 200']}
+                  />
+                  <Tooltip 
+                    contentStyle={{
                         backgroundColor: chartColors.tooltipBg,
                         border: `1px solid ${chartColors.tooltipBorder}`,
-                        borderRadius: '6px',
-                        fontSize: '12px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
                         color: chartColors.tooltipText,
-                      }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
+                    }}
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
                       stroke={chartColors.line} 
-                      strokeWidth={3}
-                      dot={false}
+                    strokeWidth={3}
+                    dot={false}
                       activeDot={{ r: 6, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
                       isAnimationActive={false}
                       connectNulls={true}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                  />
+                </LineChart>
+              </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <p className="text-muted-foreground">Loading chart...</p>
