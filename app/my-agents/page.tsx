@@ -8,15 +8,39 @@ import { AgentCard, AgentCardProps } from '@/components/agent-card'
 import { getUserAgents } from '@/lib/agents-data'
 import Link from 'next/link'
 import { Bot, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 
 export default function MyAgentsPage() {
+  const router = useRouter()
   const [agents] = useState<AgentCardProps[]>(getUserAgents())
+  const [showRenewalModal, setShowRenewalModal] = useState(false)
+
+  // Protect page - require valid trading key
+  useEffect(() => {
+    const isRegistered = localStorage.getItem('orderly_registered') === 'true'
+    const isKeyExpired = localStorage.getItem('orderly_key_expired') === 'true'
+
+    if (isKeyExpired) {
+      setShowRenewalModal(true)
+      return
+    }
+
+    if (!isRegistered) {
+      router.push('/register')
+    }
+  }, [router])
+
+  const handleRenewalSuccess = () => {
+    setShowRenewalModal(false)
+    window.dispatchEvent(new Event('localStorageChange'))
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      
+
       <main className="container mx-auto px-4 py-4">
         <div className="w-full max-w-6xl mx-auto">
           <div className="mb-4 flex items-center justify-between">
@@ -55,15 +79,22 @@ export default function MyAgentsPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {agents.map((agent) => (
-                <AgentCard 
-                  key={agent.id} 
-                  {...agent} 
+                <AgentCard
+                  key={agent.id}
+                  {...agent}
                 />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      <KeyRenewalModal
+        isOpen={showRenewalModal}
+        onClose={() => setShowRenewalModal(false)}
+        onSuccess={handleRenewalSuccess}
+        isExpired={true}
+      />
     </div>
   )
 }

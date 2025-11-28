@@ -6,8 +6,8 @@ import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Key, AlertTriangle } from 'lucide-react'
-import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 import { Badge } from '@/components/ui/badge'
+import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 
 export function NavHeader() {
   const [isConnected, setIsConnected] = useState(false)
@@ -26,30 +26,42 @@ export function NavHeader() {
 
       setIsRegistered(registered)
       setKeyExpired(expired)
-
-      // Only simulate random expiration if already registered
-      if (registered && !expired && Math.random() > 0.7) {
-        localStorage.setItem('orderly_key_expired', 'true')
-        setKeyExpired(true)
-      }
     }
 
     checkStatus()
+
+    // Listen for storage changes (from demo control panel or other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'orderly_registered' || e.key === 'orderly_key_expired') {
+        checkStatus()
+      }
+    }
+
+    // Listen for custom event (for same-tab changes)
+    const handleCustomStorageChange = () => {
+      checkStatus()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('localStorageChange', handleCustomStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('localStorageChange', handleCustomStorageChange)
+    }
   }, [])
 
   const handleKeyClick = () => {
-    // If not registered or key expired, go to register page
-    if (!isRegistered || keyExpired) {
+    // If not registered, redirect to registration
+    if (!isRegistered) {
       router.push('/register')
+    } else if (keyExpired) {
+      // If key expired, show renewal modal
+      setShowKeyModal(true)
     } else {
       // Show informational modal for active key
       setShowKeyModal(true)
     }
-  }
-
-  const handleKeySuccess = () => {
-    setKeyExpired(false)
-    localStorage.removeItem('orderly_key_expired')
   }
 
   const handleWalletToggle = () => {
@@ -187,7 +199,12 @@ export function NavHeader() {
       <KeyRenewalModal
         isOpen={showKeyModal}
         onClose={() => setShowKeyModal(false)}
-        onSuccess={handleKeySuccess}
+        onSuccess={() => {
+          setShowKeyModal(false)
+          setKeyExpired(false)
+          localStorage.removeItem('orderly_key_expired')
+          window.dispatchEvent(new Event('localStorageChange'))
+        }}
         isExpired={keyExpired}
       />
     </header>

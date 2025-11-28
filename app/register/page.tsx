@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -54,8 +55,11 @@ const STATUS_INFO = {
 
 type RegistrationStep = 'idle' | 'creating-account' | 'account-created' | 'creating-key' | 'saving' | 'complete'
 
-export default function RegisterPage() {
+function RegisterContent() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const isRenewalMode = searchParams.get('mode') === 'renew'
+
     const [currentStatus, setCurrentStatus] = useState<AccountStatus>(AccountStatus.Connected)
     const [step, setStep] = useState<RegistrationStep>('idle')
     const [isExpiredKey, setIsExpiredKey] = useState(false)
@@ -63,11 +67,11 @@ export default function RegisterPage() {
     // Simulate checking if user has expired key
     useEffect(() => {
         const hasExpiredKey = localStorage.getItem('orderly_key_expired') === 'true'
-        if (hasExpiredKey) {
+        if (hasExpiredKey || isRenewalMode) {
             setCurrentStatus(AccountStatus.DisabledTrading)
             setIsExpiredKey(true)
         }
-    }, [])
+    }, [isRenewalMode])
 
     const handleCreateAccount = async () => {
         setStep('creating-account')
@@ -96,12 +100,18 @@ export default function RegisterPage() {
         localStorage.removeItem('orderly_key_expired')
         localStorage.setItem('orderly_registered', 'true')
 
+        // Dispatch event to update other components
+        window.dispatchEvent(new Event('localStorageChange'))
+
         await new Promise(resolve => setTimeout(resolve, 1500))
-        router.push('/create')
+
+        // Redirect to intended page or default to /create
+        const redirectTo = searchParams.get('redirect') || '/create'
+        router.push(redirectTo)
     }
 
-    const needsAccountCreation = currentStatus <= AccountStatus.NotSignedIn
-    const needsKeyCreation = currentStatus === AccountStatus.SignedIn || currentStatus === AccountStatus.DisabledTrading
+    const needsAccountCreation = !isRenewalMode && currentStatus <= AccountStatus.NotSignedIn
+    const needsKeyCreation = isRenewalMode || currentStatus === AccountStatus.SignedIn || currentStatus === AccountStatus.DisabledTrading
     const isProcessing = step !== 'idle' && step !== 'account-created' && step !== 'complete'
 
     return (
@@ -114,9 +124,11 @@ export default function RegisterPage() {
                                 <Shield className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl">Register with Orderly</CardTitle>
+                                <CardTitle className="text-2xl">
+                                    {isRenewalMode ? 'Renew Trading Key' : 'Register with Orderly'}
+                                </CardTitle>
                                 <CardDescription>
-                                    {isExpiredKey
+                                    {isRenewalMode
                                         ? 'Your trading key has expired. Renew it to continue trading.'
                                         : 'Two-step setup to enable AI agent trading'}
                                 </CardDescription>
@@ -145,21 +157,48 @@ export default function RegisterPage() {
                         </p>
                     </div>
 
-                    {/* Expired Key Warning */}
+                    {/* Expired Key Warning - Friendly Version for Renewal */}
                     {isExpiredKey && step === 'idle' && (
-                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
-                            <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                        <div className={`border rounded-lg p-4 flex items-start gap-3 ${isRenewalMode
+                            ? 'bg-orange-500/10 border-orange-500/20'
+                            : 'bg-destructive/10 border-destructive/20'
+                            }`}>
+                            <AlertCircle className={`h-5 w-5 shrink-0 mt-0.5 ${isRenewalMode ? 'text-orange-500' : 'text-destructive'
+                                }`} />
                             <div className="space-y-1">
-                                <p className="text-sm font-medium text-destructive">Trading Key Expired</p>
+                                <p className={`text-sm font-medium ${isRenewalMode ? 'text-orange-500' : 'text-destructive'
+                                    }`}>
+                                    {isRenewalMode ? 'Trading Key Renewal Required' : 'Trading Key Expired'}
+                                </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Your trading key has reached its 365-day expiration. Renew it below to continue trading.
+                                    {isRenewalMode
+                                        ? 'Your trading key has expired. Please create a new one to continue managing your agents.'
+                                        : 'Your trading key has reached its 365-day expiration. Renew it below to continue trading.'}
                                 </p>
                             </div>
                         </div>
                     )}
 
-                    {/* Step 1: Create Account (if needed) */}
-                    {needsAccountCreation && step === 'idle' && (
+                    {/* Step 1: Create Account (Completed View for Renewal) */}
+                    {isRenewalMode && (
+                        <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                                    <CheckCircle2 className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-medium text-green-700 dark:text-green-400">Orderly Account Active</h3>
+                                    <p className="text-xs text-muted-foreground">Account ID: 0x71C...9A21</p>
+                                </div>
+                            </div>
+                            <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-500/5">
+                                Completed
+                            </Badge>
+                        </div>
+                    )}
+
+                    {/* Step 1: Create Account (Normal Flow) */}
+                    {needsAccountCreation && step === 'idle' && !isRenewalMode && (
                         <div className="space-y-4">
                             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                                 <h3 className="font-semibold mb-2 flex items-center gap-2">
@@ -213,16 +252,18 @@ export default function RegisterPage() {
                             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                                     <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm">
-                                        {needsAccountCreation ? '2' : '1'}
+                                        {isRenewalMode ? '1' : '2'}
                                     </span>
-                                    {isExpiredKey ? 'Renew Trading Key' : 'Create Trading Key'}
+                                    {isRenewalMode ? 'Renew Trading Key' : 'Create Trading Key'}
                                 </h3>
                                 <p className="text-sm text-muted-foreground mb-3">
-                                    Generate a 365-day trading key to authorize agent execution. This requires one wallet signature.
+                                    {isRenewalMode
+                                        ? 'Sign to generate a new trading key valid for 30 days.'
+                                        : 'Now create a trading key to enable API access.'}
                                 </p>
                                 <Button onClick={handleCreateKey} className="w-full" size="lg">
                                     <Key className="mr-2 h-4 w-4" />
-                                    {isExpiredKey ? 'Renew Key (365 days)' : 'Create Key (365 days)'}
+                                    {isRenewalMode ? 'Renew Key' : 'Create Key'}
                                 </Button>
                             </div>
                         </div>
@@ -231,7 +272,7 @@ export default function RegisterPage() {
                     {/* Wallet Signature: Creating Key */}
                     {step === 'creating-key' && (
                         <WalletSignaturePrompt
-                            message="Creating Trading Key"
+                            message={isRenewalMode ? "Renewing Trading Key" : "Creating Trading Key"}
                             description="Please sign the key addition message in your wallet"
                         />
                     )}
@@ -251,7 +292,9 @@ export default function RegisterPage() {
                                 <CheckCircle2 className="h-6 w-6 text-green-500" />
                             </div>
                             <div>
-                                <p className="font-medium text-green-500">Registration Complete!</p>
+                                <p className="font-medium text-green-500">
+                                    {isRenewalMode ? 'Key Renewed Successfully!' : 'Registration Complete!'}
+                                </p>
                                 <p className="text-sm text-muted-foreground mt-1">
                                     Redirecting to agent creation...
                                 </p>
@@ -272,5 +315,13 @@ export default function RegisterPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <RegisterContent />
+        </Suspense>
     )
 }

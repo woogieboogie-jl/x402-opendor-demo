@@ -22,6 +22,29 @@ export function DemoControlPanel() {
     const [isOpen, setIsOpen] = useState(false)
     const [isMinimized, setIsMinimized] = useState(false)
     const [showValues, setShowValues] = useState(false)
+    const [isRegistered, setIsRegistered] = useState(false)
+    const [isKeyExpired, setIsKeyExpired] = useState(false)
+
+    // Update state from localStorage
+    const updateState = () => {
+        if (typeof window !== 'undefined') {
+            setIsRegistered(localStorage.getItem('orderly_registered') === 'true')
+            setIsKeyExpired(localStorage.getItem('orderly_key_expired') === 'true')
+        }
+    }
+
+    // Initialize and listen for changes
+    useEffect(() => {
+        updateState()
+
+        // Listen for custom storage events
+        const handleStorageChange = () => {
+            updateState()
+        }
+
+        window.addEventListener('localStorageChange', handleStorageChange)
+        return () => window.removeEventListener('localStorageChange', handleStorageChange)
+    }, [])
 
     // Keyboard shortcut: Cmd/Ctrl + Shift + D
     useEffect(() => {
@@ -36,24 +59,36 @@ export function DemoControlPanel() {
         return () => window.removeEventListener('keydown', handleKeyPress)
     }, [])
 
-    // Get current localStorage state
-    const isRegistered = typeof window !== 'undefined'
-        ? localStorage.getItem('orderly_registered') === 'true'
-        : false
-    const isKeyExpired = typeof window !== 'undefined'
-        ? localStorage.getItem('orderly_key_expired') === 'true'
-        : false
+    const [confirmResetAll, setConfirmResetAll] = useState(false)
+    const [confirmResetReg, setConfirmResetReg] = useState(false)
+
+    // Reset confirmation states when panel closes
+    useEffect(() => {
+        if (!isOpen) {
+            setConfirmResetAll(false)
+            setConfirmResetReg(false)
+        }
+    }, [isOpen])
 
     const handleResetAll = () => {
-        if (confirm('Reset all demo data? This will clear your registration and reload the page.')) {
+        if (confirmResetAll) {
             localStorage.clear()
             window.location.reload()
+        } else {
+            setConfirmResetAll(true)
+            // Auto-reset confirmation after 3 seconds
+            setTimeout(() => setConfirmResetAll(false), 3000)
         }
     }
 
     const handleResetRegistration = () => {
-        localStorage.removeItem('orderly_registered')
-        window.location.reload()
+        if (confirmResetReg) {
+            localStorage.removeItem('orderly_registered')
+            window.location.reload()
+        } else {
+            setConfirmResetReg(true)
+            setTimeout(() => setConfirmResetReg(false), 3000)
+        }
     }
 
     const handleToggleKeyExpiration = () => {
@@ -62,13 +97,15 @@ export function DemoControlPanel() {
         } else {
             localStorage.setItem('orderly_key_expired', 'true')
         }
-        window.location.reload()
+        // Dispatch custom event for same-tab sync
+        window.dispatchEvent(new Event('localStorageChange'))
     }
 
     const handleMarkAsRegistered = () => {
         localStorage.setItem('orderly_registered', 'true')
         localStorage.removeItem('orderly_key_expired')
-        window.location.reload()
+        // Dispatch custom event for same-tab sync
+        window.dispatchEvent(new Event('localStorageChange'))
     }
 
     if (!isOpen) {
@@ -145,22 +182,29 @@ export function DemoControlPanel() {
                                         )}
                                     </Badge>
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Trading Key:</span>
-                                    <Badge variant={isKeyExpired ? "destructive" : "default"} className="gap-1">
-                                        {isKeyExpired ? (
-                                            <>
-                                                <AlertTriangle className="h-3 w-3" />
-                                                Expired
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Key className="h-3 w-3" />
-                                                Active
-                                            </>
-                                        )}
-                                    </Badge>
-                                </div>
+
+                                {/* Only show Trading Key if registered */}
+                                {isRegistered && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Trading Key:</span>
+                                        <Badge
+                                            variant={isKeyExpired ? "outline" : "default"}
+                                            className={isKeyExpired ? "gap-1 border-orange-500/50 bg-orange-500/10 text-orange-500" : "gap-1"}
+                                        >
+                                            {isKeyExpired ? (
+                                                <>
+                                                    <AlertTriangle className="h-3 w-3" />
+                                                    Expired
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Key className="h-3 w-3" />
+                                                    Active
+                                                </>
+                                            )}
+                                        </Badge>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -214,6 +258,7 @@ export function DemoControlPanel() {
                                     size="sm"
                                     className="text-xs"
                                     onClick={handleToggleKeyExpiration}
+                                    disabled={!isRegistered}
                                 >
                                     <Key className="h-3 w-3 mr-1" />
                                     {isKeyExpired ? 'Activate Key' : 'Expire Key'}
@@ -236,23 +281,23 @@ export function DemoControlPanel() {
                             <p className="text-xs font-medium text-muted-foreground">Reset Actions</p>
                             <div className="space-y-2">
                                 <Button
-                                    variant="outline"
+                                    variant={confirmResetReg ? "destructive" : "outline"}
                                     size="sm"
                                     className="w-full text-xs"
                                     onClick={handleResetRegistration}
                                     disabled={!isRegistered}
                                 >
                                     <RotateCcw className="h-3 w-3 mr-1" />
-                                    Reset Registration Only
+                                    {confirmResetReg ? 'Are you sure? Click to Confirm' : 'Reset Registration Only'}
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     size="sm"
-                                    className="w-full text-xs"
+                                    className={`w-full text-xs ${confirmResetAll ? 'bg-red-600 hover:bg-red-700' : ''}`}
                                     onClick={handleResetAll}
                                 >
                                     <Trash2 className="h-3 w-3 mr-1" />
-                                    Clear All & Reload
+                                    {confirmResetAll ? 'Are you sure? Click to Confirm' : 'Clear All & Reload'}
                                 </Button>
                             </div>
                         </div>

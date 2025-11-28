@@ -22,6 +22,7 @@ import { getAgentById } from '@/lib/agents-data'
 import { useRouter, useParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { DepositModal } from '@/components/modals/deposit-modal'
+import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 
 export default function AgentDetailPage() {
   const { theme } = useTheme()
@@ -31,6 +32,7 @@ export default function AgentDetailPage() {
   const [agent, setAgent] = useState<ReturnType<typeof getAgentById>>(undefined)
   const router = useRouter()
   const params = useParams()
+  const [showRenewalModal, setShowRenewalModal] = useState(false)
 
   const handleTogglePause = () => {
     if (agent) {
@@ -43,6 +45,26 @@ export default function AgentDetailPage() {
 
   const handleEdit = () => {
     router.push(`/create?edit=${agent?.id}`)
+  }
+
+  // Protect page - require valid trading key
+  useEffect(() => {
+    const isRegistered = localStorage.getItem('orderly_registered') === 'true'
+    const isKeyExpired = localStorage.getItem('orderly_key_expired') === 'true'
+
+    if (isKeyExpired) {
+      setShowRenewalModal(true)
+      return
+    }
+
+    if (!isRegistered) {
+      router.push('/register')
+    }
+  }, [router, params.id])
+
+  const handleRenewalSuccess = () => {
+    setShowRenewalModal(false)
+    window.dispatchEvent(new Event('localStorageChange'))
   }
 
   // Theme-aware colors for charts
@@ -624,6 +646,13 @@ export default function AgentDetailPage() {
           }}
         />
       )}
+
+      <KeyRenewalModal
+        isOpen={showRenewalModal}
+        onClose={() => setShowRenewalModal(false)}
+        onSuccess={handleRenewalSuccess}
+        isExpired={true}
+      />
     </div>
   )
 }

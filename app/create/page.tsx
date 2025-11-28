@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { X402Badge } from '@/components/x402-badge'
 import { LaunchPaymentModal } from '@/components/modals/launch-payment-modal'
+import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 import { WalletSignaturePrompt } from '@/components/wallet-signature-prompt'
 import { useState, useEffect } from 'react'
 import { TrendingUp, Volume2, Twitter, BarChart3, Globe, LinkIcon, Sparkles, Database, Zap, Cpu, CheckCircle2, Clock } from 'lucide-react'
@@ -65,6 +66,7 @@ export default function CreateAgentPage() {
   const [subAccountId, setSubAccountId] = useState<string | null>(null)
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(true)
   const [timerInterval, setTimerInterval] = useState<TimerInterval>(14400000) // Default: 4 hours
+  const [showRenewalModal, setShowRenewalModal] = useState(false)
 
   // Check if user is registered with Orderly
   useEffect(() => {
@@ -74,6 +76,15 @@ export default function CreateAgentPage() {
       await new Promise(resolve => setTimeout(resolve, 500))
 
       const isRegistered = localStorage.getItem('orderly_registered') === 'true'
+      const isKeyExpired = localStorage.getItem('orderly_key_expired') === 'true'
+
+      // If key is expired, show renewal modal instead of redirecting
+      if (isKeyExpired) {
+        setShowRenewalModal(true)
+        setIsCheckingRegistration(false)
+        return
+      }
+
       if (!isRegistered) {
         router.push('/register')
       } else {
@@ -83,6 +94,12 @@ export default function CreateAgentPage() {
 
     checkRegistration()
   }, [router])
+
+  const handleRenewalSuccess = () => {
+    setShowRenewalModal(false)
+    // Dispatch event to update other components
+    window.dispatchEvent(new Event('localStorageChange'))
+  }
 
   const calculateDeploymentFee = () => {
     let baseFee = 10 // Base 10 USDC
@@ -514,6 +531,13 @@ export default function CreateAgentPage() {
           onSuccess={handlePaymentSuccess}
         />
       )}
+
+      <KeyRenewalModal
+        isOpen={showRenewalModal}
+        onClose={() => setShowRenewalModal(false)}
+        onSuccess={handleRenewalSuccess}
+        isExpired={true}
+      />
     </div>
   )
 }
