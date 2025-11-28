@@ -16,10 +16,10 @@ interface LaunchPaymentModalProps {
   onSuccess: () => void
 }
 
-export function LaunchPaymentModal({ 
-  agentName, 
-  trigger, 
-  contexts, 
+export function LaunchPaymentModal({
+  agentName,
+  trigger,
+  contexts,
   strategy,
   launchFee = 10,
   onClose,
@@ -33,7 +33,14 @@ export function LaunchPaymentModal({
 
   const handlePayment = async () => {
     setIsProcessing(true)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    // Simulate sub-account creation (matches real flow)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    const subAccountId = `sub_${Math.random().toString(36).substr(2, 9)}`
+    console.log('✅ Sub-account created:', subAccountId)
+
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 500))
     setTxHash('0xdef456...abc123')
     setIsSuccess(true)
     setIsProcessing(false)
@@ -138,8 +145,8 @@ export function LaunchPaymentModal({
             </p>
           </div>
 
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             size="lg"
             disabled={isProcessing}
             onClick={handlePayment}

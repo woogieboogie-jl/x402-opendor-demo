@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Play, Pause, Settings } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Play, Pause, Settings, Zap, Activity, Clock, BarChart2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { getAgentById } from '@/lib/agents-data'
@@ -31,7 +31,7 @@ export default function AgentDetailPage() {
   const [agent, setAgent] = useState<ReturnType<typeof getAgentById>>(undefined)
   const router = useRouter()
   const params = useParams()
-  
+
   const handleTogglePause = () => {
     if (agent) {
       setAgent({
@@ -40,51 +40,31 @@ export default function AgentDetailPage() {
       })
     }
   }
-  
+
   const handleEdit = () => {
-    // Navigate to edit page or open edit modal
     router.push(`/create?edit=${agent?.id}`)
   }
-  
+
   // Theme-aware colors for charts
   const isDark = theme === 'dark'
   const chartColors = {
-    grid: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
-    axis: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
-    line: isDark ? '#a78bfa' : '#8884d8', // violet-400 / purple-500
-    tooltipBg: isDark ? '#1f2937' : '#ffffff', // gray-800 / white
-    tooltipBorder: isDark ? '#374151' : '#e5e7eb', // gray-700 / gray-200
-    tooltipText: isDark ? '#f3f4f6' : '#111827', // gray-100 / gray-900
-    tooltipItem: isDark ? '#a78bfa' : '#8884d8', // violet-400 / purple-500
+    grid: isDark ? '#374151' : '#e5e7eb',
+    axis: isDark ? '#9ca3af' : '#6b7280',
+    line: isDark ? '#a78bfa' : '#8884d8',
+    tooltipBg: isDark ? '#1f2937' : '#ffffff',
+    tooltipBorder: isDark ? '#374151' : '#e5e7eb',
+    tooltipText: isDark ? '#f3f4f6' : '#111827',
+    tooltipItem: isDark ? '#a78bfa' : '#8884d8',
   }
 
   useEffect(() => {
     if (params?.id && typeof params.id === 'string') {
-      console.log('Fetching agent with ID:', params.id)
       const agentData = getAgentById(params.id)
-      console.log('Agent data found:', agentData ? 'Yes' : 'No', agentData)
       setAgent(agentData)
     }
   }, [params?.id])
-  
-  if (!params?.id) {
-    return (
-      <div className="min-h-screen bg-background">
-        <NavHeader />
-        <main className="container mx-auto px-4 py-8">
-          <div className="mx-auto max-w-7xl">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <p className="text-muted-foreground">Loading...</p>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    )
-  }
 
-  if (!agent) {
+  if (!params?.id || !agent) {
     return (
       <div className="min-h-screen bg-background">
         <NavHeader />
@@ -92,14 +72,7 @@ export default function AgentDetailPage() {
           <div className="mx-auto max-w-7xl">
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <h3 className="mb-2 text-xl font-semibold">Agent not found</h3>
-                <p className="mb-6 text-center text-muted-foreground">
-                  The agent you're looking for doesn't exist.
-                </p>
-                <Button onClick={() => router.push('/my-agents')}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to My Agents
-                </Button>
+                <p className="text-muted-foreground">Loading agent details...</p>
               </CardContent>
             </Card>
           </div>
@@ -113,24 +86,23 @@ export default function AgentDetailPage() {
     setShowTxModal(true)
   }
 
-  // Normalize performance data format
   const performanceData = agent?.performanceData && agent.performanceData.length > 0
     ? agent.performanceData.map(p => ({
-        time: 'time' in p ? p.time : p.date,
-        value: p.value
-      }))
+      time: 'time' in p ? p.time : p.date,
+      value: p.value
+    }))
     : []
 
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      
+
       <main className="container mx-auto px-4 py-4">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-4">
-            <Button 
-              variant="ghost" 
-              className="mb-2"
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              className="mb-2 pl-0 hover:bg-transparent hover:text-primary"
               onClick={() => {
                 if (agent) {
                   router.push(agent.isOwned ? "/my-agents" : "/marketplace")
@@ -139,243 +111,309 @@ export default function AgentDetailPage() {
                 }
               }}
             >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back to {agent?.isOwned ? "My Agents" : "Marketplace"}
             </Button>
-            
-            <div className="flex items-start justify-between">
+
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold">{agent.name}</h1>
-                  {agent.status && (
-                    <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
-                      {agent.status === 'active' ? 'Active' : 'Paused'}
-                    </Badge>
-                  )}
-                  {agent.isPublished && (
-                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
-                    Public
-                  </Badge>
-                  )}
-                  {agent.creator && (
-                    <span className="text-sm text-muted-foreground">by {agent.creator}</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {agent.status && (
+                      <Badge variant={agent.status === 'active' ? 'default' : 'secondary'} className="h-6">
+                        {agent.status === 'active' ? (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                            Running
+                          </div>
+                        ) : 'Stopped'}
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted/50 border text-xs font-medium text-muted-foreground">
+                      <Activity className="w-3 h-3" />
+                      Heartbeat: 1m ago
+                    </div>
+                  </div>
                 </div>
-                <p className="text-muted-foreground mb-4">
+
+                <p className="text-muted-foreground mb-4 max-w-2xl text-lg leading-relaxed">
                   {agent.strategy}
                 </p>
-                <div className="flex flex-wrap gap-2">
+
+                <div className="flex flex-wrap gap-2 mb-4">
                   {agent.triggers.map(trigger => (
-                    <Badge key={trigger} variant="outline">{trigger}</Badge>
+                    <Badge key={trigger} variant="secondary" className="px-2.5 py-1">{trigger}</Badge>
                   ))}
                   {agent.contexts.map(context => (
-                    <Badge key={context} variant="outline">{context}</Badge>
+                    <Badge key={context} variant="outline" className="px-2.5 py-1">{context}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="flex gap-2">
-                {agent.isOwned ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTogglePause}
-                      className="gap-2"
-                    >
-                      {agent.status === 'active' ? (
-                        <>
-                          <Pause className="h-4 w-4" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-4 w-4" />
-                          Play
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEdit}
-                      className="gap-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setShowDepositModal(true)}>Deposit More</Button>
-                    {agent.isPublished && (
-                      <Button variant="outline" size="sm" className="text-destructive">Unpublish</Button>
-                    )}
-                  </>
-                ) : (
-                  <Button onClick={() => setShowDepositModal(true)}>Deposit to Agent</Button>
-                )}
+
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full border border-border/50">
+                  <Zap className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Streaming Cost: <span className="text-foreground font-semibold">$0.0042/hr</span>
+                  </span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse ml-1" />
+                </div>
+
+                <div className="flex gap-2">
+                  {agent.isOwned ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleTogglePause}
+                        className="gap-2"
+                      >
+                        {agent.status === 'active' ? (
+                          <>
+                            <Pause className="h-4 w-4" />
+                            Pause
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4" />
+                            Resume
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEdit}
+                        className="gap-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Config
+                      </Button>
+                      <Button size="sm" onClick={() => setShowDepositModal(true)}>Add Funds</Button>
+                    </>
+                  ) : (
+                    <Button size="sm" onClick={() => setShowDepositModal(true)}>Deposit to Agent</Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-6 mb-6 md:grid-cols-4">
+          <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Funded Amount</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${agent.funded.toLocaleString()}</p>
-                {agent.totalDeposits && (
-                  <p className="text-xs text-muted-foreground mt-1">Total deposits: ${agent.totalDeposits.toLocaleString()}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total P&L</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {agent.pnl >= 0 ? (
-                  <TrendingUp className="h-5 w-5 text-accent" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 text-destructive" />
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Total Equity</p>
+                  <Badge variant="outline" className="text-[10px] font-normal">USDC</Badge>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold">${agent.funded.toLocaleString()}</span>
+                  {agent.totalDeposits && (
+                    <span className="text-xs text-muted-foreground">/ ${agent.totalDeposits.toLocaleString()} cap</span>
                   )}
-                  <p className={`text-2xl font-bold ${agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}`}>
-                    {agent.pnl >= 0 ? '+' : ''}${agent.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Sharpe Ratio</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{agent.sharpeRatio.toFixed(2)}</p>
-                {agent.sharpeTarget && agent.sharpeRatio >= agent.sharpeTarget && (
-                  <p className="text-xs text-accent mt-1">Above {agent.sharpeTarget.toFixed(1)} target</p>
-                )}
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Total P&L</p>
+                  {agent.pnl >= 0 ? <TrendingUp className="h-4 w-4 text-accent" /> : <TrendingDown className="h-4 w-4 text-destructive" />}
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-2xl font-bold ${agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                    {agent.pnl >= 0 ? '+' : ''}${agent.pnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className={`text-xs ${agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                    ({((agent.pnl / (agent.funded - agent.pnl)) * 100).toFixed(1)}%)
+                  </span>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>{agent.collateralStake ? 'Collateral Stake' : 'Win Rate'}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {agent.collateralStake ? (
-                  <>
-                    <p className="text-2xl font-bold">${agent.collateralStake.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">USDC locked</p>
-                  </>
-                ) : (
-                  <p className="text-2xl font-bold">{agent.winRate}%</p>
-                )}
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Sharpe Ratio</p>
+                  <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold">{(agent.sharpeRatio ?? 0).toFixed(2)}</span>
+                  <Badge variant={agent.sharpeRatio > 2 ? 'default' : 'secondary'} className="text-[10px] h-5">
+                    {agent.sharpeRatio > 2 ? 'Excellent' : 'Good'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Win Rate</p>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold">{agent.winRate ?? 0}%</span>
+                  <span className="text-xs text-muted-foreground">{agent.totalTrades || 0} trades</span>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Performance Chart</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[320px] w-full">
-                {performanceData && performanceData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={performanceData} margin={{ top: 15, right: 35, bottom: 15, left: 15 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} />
-                    <XAxis 
-                      dataKey="time" 
-                        stroke={chartColors.axis} 
-                      fontSize={12}
-                      tickLine={false}
-                        axisLine={{ stroke: chartColors.grid }}
-                    />
-                    <YAxis 
-                        stroke={chartColors.axis} 
-                      fontSize={12}
-                      tickLine={false}
-                        axisLine={{ stroke: chartColors.grid }}
-                        domain={['auto', 'auto']}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                          backgroundColor: chartColors.tooltipBg, 
-                          border: `1px solid ${chartColors.tooltipBorder}`,
-                        borderRadius: '8px',
-                        padding: '8px 12px'
-                      }}
-                        labelStyle={{ color: chartColors.tooltipText, fontWeight: 'bold' }}
-                        itemStyle={{ color: chartColors.tooltipItem }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                        stroke={chartColors.line} 
-                      strokeWidth={3}
-                      dot={false}
-                        activeDot={{ r: 7, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
-                        isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No performance data available</p>
+          <div className="grid gap-6 mb-6 md:grid-cols-3">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Performance Chart</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] w-full">
+                  {performanceData && performanceData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={performanceData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} opacity={0.3} vertical={false} />
+                        <XAxis
+                          dataKey="time"
+                          stroke={chartColors.axis}
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          dy={10}
+                        />
+                        <YAxis
+                          stroke={chartColors.axis}
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          dx={-10}
+                          domain={['auto', 'auto']}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: chartColors.tooltipBg,
+                            border: `1px solid ${chartColors.tooltipBorder}`,
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          labelStyle={{ color: chartColors.tooltipText, fontWeight: 'bold', marginBottom: '4px' }}
+                          itemStyle={{ color: chartColors.tooltipItem }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke={chartColors.line}
+                          strokeWidth={3}
+                          dot={false}
+                          activeDot={{ r: 6, fill: chartColors.line, stroke: isDark ? '#1f2937' : 'white', strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">No performance data available</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Risk Metrics</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Max Drawdown</span>
+                    </div>
+                    <span className="font-medium text-destructive">-{agent.maxDrawdown || 0}%</span>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Avg Hold Time</span>
+                    </div>
+                    <span className="font-medium">{agent.avgTradeDuration || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Total Trades</span>
+                    </div>
+                    <span className="font-medium">{agent.totalTrades || 0}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Configuration</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Leverage Cap</span>
+                    <Badge variant="outline">5x</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Stop Loss</span>
+                    <Badge variant="outline">Hard (-5%)</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Take Profit</span>
+                    <Badge variant="outline">Trailing</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           <Tabs defaultValue="positions" className="space-y-4">
             <TabsList>
               <TabsTrigger value="positions">Positions</TabsTrigger>
-              <TabsTrigger value="trades">Completed Trades</TabsTrigger>
-              <TabsTrigger value="transactions">Transaction History</TabsTrigger>
-              <TabsTrigger value="reasoning">Agent Reasoning</TabsTrigger>
+              <TabsTrigger value="trades">History</TabsTrigger>
+              <TabsTrigger value="reasoning">Reasoning</TabsTrigger>
+              <TabsTrigger value="transactions">x402 Ledger</TabsTrigger>
             </TabsList>
 
             <TabsContent value="positions">
               <Card>
-                <CardHeader>
-                  <CardTitle>Current Open Positions</CardTitle>
-                  <CardDescription>Active trades being managed by the agent</CardDescription>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Asset</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead>Entry Price</TableHead>
-                        <TableHead>Current Price</TableHead>
+                        <TableHead>Entry</TableHead>
+                        <TableHead>Current</TableHead>
                         <TableHead>P&L</TableHead>
                         <TableHead>Leverage</TableHead>
-                        <TableHead>Receipt</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {agent.positions.length > 0 ? (
                         agent.positions.map((pos) => (
-                        <TableRow key={pos.id}>
-                          <TableCell className="font-medium">{pos.asset}</TableCell>
-                          <TableCell>
-                            <Badge variant={pos.type === 'Long' ? 'default' : 'secondary'}>
-                              {pos.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>${pos.entry.toLocaleString()}</TableCell>
-                          <TableCell>${pos.current.toLocaleString()}</TableCell>
-                          <TableCell className={pos.pnl >= 0 ? 'text-accent' : 'text-destructive'}>
-                            {pos.pnl >= 0 ? '+' : ''}${pos.pnl}
-                          </TableCell>
-                          <TableCell>{pos.leverage}</TableCell>
-                          <TableCell>
-                            <X402Badge onClick={() => handleTxClick({ txHash: pos.txHash, type: 'Trade' })} />
-                          </TableCell>
-                        </TableRow>
+                          <TableRow key={pos.id}>
+                            <TableCell className="font-medium">{pos.asset}</TableCell>
+                            <TableCell>
+                              <Badge variant={pos.type === 'Long' ? 'default' : 'secondary'} className="font-normal">
+                                {pos.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>${pos.entry.toLocaleString()}</TableCell>
+                            <TableCell>${pos.current.toLocaleString()}</TableCell>
+                            <TableCell className={pos.pnl >= 0 ? 'text-accent' : 'text-destructive'}>
+                              {pos.pnl >= 0 ? '+' : ''}${pos.pnl}
+                            </TableCell>
+                            <TableCell>{pos.leverage}</TableCell>
+                            <TableCell className="text-right">
+                              <X402Badge onClick={() => handleTxClick({ txHash: pos.txHash, type: 'Trade' })} />
+                            </TableCell>
+                          </TableRow>
                         ))
                       ) : (
                         <TableRow>
@@ -392,11 +430,7 @@ export default function AgentDetailPage() {
 
             <TabsContent value="trades">
               <Card>
-                <CardHeader>
-                  <CardTitle>Completed Trades</CardTitle>
-                  <CardDescription>Historical trade performance</CardDescription>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -407,30 +441,30 @@ export default function AgentDetailPage() {
                         <TableHead>Exit</TableHead>
                         <TableHead>P&L</TableHead>
                         <TableHead>Duration</TableHead>
-                        <TableHead>Receipt</TableHead>
+                        <TableHead className="text-right">Receipt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {agent.completedTrades.length > 0 ? (
                         agent.completedTrades.map((trade) => (
-                        <TableRow key={trade.id}>
-                          <TableCell className="text-xs">{trade.date}</TableCell>
-                          <TableCell className="font-medium">{trade.asset}</TableCell>
-                          <TableCell>
-                            <Badge variant={trade.type === 'Long' ? 'default' : 'secondary'}>
-                              {trade.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>${trade.entry.toLocaleString()}</TableCell>
-                          <TableCell>${trade.exit.toLocaleString()}</TableCell>
-                          <TableCell className={trade.pnl >= 0 ? 'text-accent font-semibold' : 'text-destructive font-semibold'}>
-                            {trade.pnl >= 0 ? '+' : ''}${trade.pnl}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">{trade.duration}</TableCell>
-                          <TableCell>
-                            <X402Badge onClick={() => handleTxClick({ txHash: trade.txHash, type: 'Trade', amount: trade.pnl })} />
-                          </TableCell>
-                        </TableRow>
+                          <TableRow key={trade.id}>
+                            <TableCell className="text-xs text-muted-foreground">{trade.date}</TableCell>
+                            <TableCell className="font-medium">{trade.asset}</TableCell>
+                            <TableCell>
+                              <Badge variant={trade.type === 'Long' ? 'default' : 'secondary'} className="font-normal">
+                                {trade.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>${trade.entry.toLocaleString()}</TableCell>
+                            <TableCell>${trade.exit.toLocaleString()}</TableCell>
+                            <TableCell className={trade.pnl >= 0 ? 'text-accent font-medium' : 'text-destructive font-medium'}>
+                              {trade.pnl >= 0 ? '+' : ''}${trade.pnl}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{trade.duration}</TableCell>
+                            <TableCell className="text-right">
+                              <X402Badge onClick={() => handleTxClick({ txHash: trade.txHash, type: 'Trade', amount: trade.pnl })} />
+                            </TableCell>
+                          </TableRow>
                         ))
                       ) : (
                         <TableRow>
@@ -447,11 +481,7 @@ export default function AgentDetailPage() {
 
             <TabsContent value="transactions">
               <Card>
-                <CardHeader>
-                  <CardTitle>Transaction History (x402)</CardTitle>
-                  <CardDescription>All transactions recorded via x402 protocol</CardDescription>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -459,31 +489,31 @@ export default function AgentDetailPage() {
                         <TableHead>Amount</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Chain</TableHead>
-                        <TableHead>Transaction</TableHead>
+                        <TableHead className="text-right">Transaction</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {agent.transactions.length > 0 ? (
                         agent.transactions.map((tx) => (
-                        <TableRow key={tx.id}>
-                          <TableCell>
-                            <Badge variant="outline">{tx.type}</Badge>
-                          </TableCell>
-                          <TableCell className="font-semibold">
-                            {tx.type === 'Creation' ? `${tx.amount} USDC` : `$${tx.amount.toLocaleString()}`}
-                          </TableCell>
-                          <TableCell className="text-xs">{tx.date}</TableCell>
-                          <TableCell>{tx.chain}</TableCell>
-                          <TableCell>
-                            <button
-                              onClick={() => handleTxClick(tx)}
-                              className="flex items-center gap-1 text-primary hover:underline font-mono text-xs"
-                            >
-                              {tx.txHash}
-                              <ExternalLink className="h-3 w-3" />
-                            </button>
-                          </TableCell>
-                        </TableRow>
+                          <TableRow key={tx.id}>
+                            <TableCell>
+                              <Badge variant="outline" className="font-normal">{tx.type}</Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {tx.type === 'Creation' ? `${tx.amount} USDC` : `$${tx.amount.toLocaleString()}`}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{tx.date}</TableCell>
+                            <TableCell className="text-xs">{tx.chain}</TableCell>
+                            <TableCell className="text-right">
+                              <button
+                                onClick={() => handleTxClick(tx)}
+                                className="inline-flex items-center gap-1 text-primary hover:underline font-mono text-xs"
+                              >
+                                {tx.txHash.substring(0, 8)}...
+                                <ExternalLink className="h-3 w-3" />
+                              </button>
+                            </TableCell>
+                          </TableRow>
                         ))
                       ) : (
                         <TableRow>
@@ -502,27 +532,32 @@ export default function AgentDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Agent Reasoning Log</CardTitle>
-                  <CardDescription>Decision-making process and trade rationale</CardDescription>
+                  <CardDescription>Real-time decision making process</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {agent.reasoningLog.length > 0 ? (
-                  <div className="space-y-4">
+                    <div className="space-y-6">
                       {agent.reasoningLog.map((log) => (
-                      <div key={log.id} className="border-l-2 border-primary pl-4 py-2">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">{log.time}</p>
-                          <Badge variant="outline">{log.trigger}</Badge>
+                        <div key={log.id} className="relative pl-6 border-l-2 border-muted pb-2 last:pb-0">
+                          <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-background" />
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs text-muted-foreground font-mono">{log.time}</span>
+                            <Badge variant="outline" className="text-[10px]">{log.trigger}</Badge>
+                          </div>
+                          <h4 className="font-semibold text-sm mb-1">{log.action}</h4>
+                          <div className="bg-muted/30 rounded-lg p-3 text-sm space-y-2">
+                            <p>
+                              <span className="font-medium text-muted-foreground">Context: </span>
+                              {log.context}
+                            </p>
+                            <p>
+                              <span className="font-medium text-muted-foreground">Reasoning: </span>
+                              {log.reasoning}
+                            </p>
+                          </div>
                         </div>
-                        <p className="font-semibold mb-1">{log.action}</p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <span className="font-medium">Context:</span> {log.context}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-medium">Reasoning:</span> {log.reasoning}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
                   ) : (
                     <div className="text-center text-muted-foreground py-8">
                       No reasoning logs available
@@ -537,32 +572,36 @@ export default function AgentDetailPage() {
 
       {showTxModal && selectedTx && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={() => setShowTxModal(false)}>
-          <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <Card className="w-full max-w-md shadow-lg" onClick={(e) => e.stopPropagation()}>
             <CardHeader>
               <CardTitle>Transaction Receipt</CardTitle>
-              <CardDescription>x402 Protocol Transaction</CardDescription>
+              <CardDescription>x402 Protocol Verification</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label className="text-xs text-muted-foreground">Transaction Hash</Label>
-                <p className="font-mono text-sm break-all">{selectedTx.txHash}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Chain</Label>
-                <p className="text-sm">{selectedTx.chain || 'Ethereum'}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Timestamp</Label>
-                <p className="text-sm">{selectedTx.date || new Date().toLocaleString()}</p>
-              </div>
-              {selectedTx.amount && (
+              <div className="p-3 bg-muted/50 rounded-lg space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Amount</Label>
-                  <p className="text-sm font-semibold">${selectedTx.amount}</p>
+                  <Label className="text-xs text-muted-foreground">Transaction Hash</Label>
+                  <p className="font-mono text-sm break-all text-primary">{selectedTx.txHash}</p>
                 </div>
-              )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Chain</Label>
+                    <p className="text-sm font-medium">{selectedTx.chain || 'Ethereum'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Timestamp</Label>
+                    <p className="text-sm font-medium">{selectedTx.date || new Date().toLocaleString()}</p>
+                  </div>
+                </div>
+                {selectedTx.amount && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Amount</Label>
+                    <p className="text-lg font-bold">${selectedTx.amount}</p>
+                  </div>
+                )}
+              </div>
               <Button className="w-full" onClick={() => setShowTxModal(false)}>
-                Close
+                Close Receipt
               </Button>
             </CardContent>
           </Card>
@@ -582,7 +621,6 @@ export default function AgentDetailPage() {
           onClose={() => setShowDepositModal(false)}
           onSuccess={() => {
             setShowDepositModal(false)
-            // Optionally refresh agent data or show success message
           }}
         />
       )}

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select"
 import { AgentComparisonChart } from '@/components/agent-comparison-chart'
 import { AgentRankingTable } from '@/components/agent-ranking-table'
-import { AgentCard, AgentCardProps } from '@/components/agent-card'
+import { MarketplaceCard } from '@/components/marketplace-card'
 import { getPublicAgents } from '@/lib/agents-data'
 import { Search, Sparkles } from 'lucide-react'
 import { useState } from 'react'
@@ -29,11 +29,11 @@ export default function MarketplacePage() {
   const sortedAgents = [...publicAgents].sort((a, b) => {
     switch (sortBy) {
       case 'sharpe':
-        return b.sharpeRatio - a.sharpeRatio
+        return (b.sharpeRatio || 0) - (a.sharpeRatio || 0)
       case 'deposits':
         return (b.totalDeposits || 0) - (a.totalDeposits || 0)
       case 'winrate':
-        return b.winRate - a.winRate
+        return (b.winRate || 0) - (a.winRate || 0)
       case 'pnl':
         return b.pnl - a.pnl
       default:
@@ -48,13 +48,13 @@ export default function MarketplacePage() {
     }
     // Apply search filter
     return agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.strategy.toLowerCase().includes(searchQuery.toLowerCase())
+      agent.strategy.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      
+
       <main className="container mx-auto px-4 py-4">
         <div className="w-full max-w-6xl mx-auto">
           <div className="mb-4 flex items-center justify-between">
@@ -68,7 +68,7 @@ export default function MarketplacePage() {
 
           <div className="grid gap-4 md:grid-cols-3 mb-8 items-stretch">
             <div className="md:col-span-2">
-          <AgentComparisonChart />
+              <AgentComparisonChart />
             </div>
             <div className="md:col-span-1">
               <AgentRankingTable agents={publicAgents} />
@@ -97,28 +97,33 @@ export default function MarketplacePage() {
                   onCheckedChange={setShowKOLOnly}
                   aria-label="Filter to show only KOL agents"
                   className="data-[state=checked]:bg-purple-500 data-[state=checked]:hover:bg-purple-600"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sharpe">Sharpe Ratio</SelectItem>
-                  <SelectItem value="deposits">Total Deposits</SelectItem>
-                  <SelectItem value="winrate">Win Rate</SelectItem>
-                  <SelectItem value="pnl">Total P&L</SelectItem>
-                </SelectContent>
-              </Select>
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sharpe">Sharpe Ratio</SelectItem>
+                    <SelectItem value="deposits">Total Deposits</SelectItem>
+                    <SelectItem value="winrate">Win Rate</SelectItem>
+                    <SelectItem value="pnl">Total P&L</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
             {filteredAgents.map((agent) => (
-              <AgentCard key={agent.id} {...agent} />
+              <MarketplaceCard
+                key={agent.id}
+                {...agent}
+                winRate={agent.winRate || 0}
+                sharpeRatio={agent.sharpeRatio || 0}
+              />
             ))}
           </div>
 

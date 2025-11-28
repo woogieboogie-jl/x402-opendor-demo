@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { X402Badge } from '@/components/x402-badge'
-import { X, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
+import { X, CheckCircle, Loader2, ArrowLeft, AlertCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface DepositModalProps {
   agentName: string
@@ -21,7 +22,7 @@ interface DepositModalProps {
   onSuccess?: () => void
 }
 
-export function DepositModal({ 
+export function DepositModal({
   agentName,
   agentStrategy,
   agentTrigger,
@@ -29,7 +30,7 @@ export function DepositModal({
   agentPnl,
   agentSharpeRatio,
   agentWinRate,
-  isOwnAgent, 
+  isOwnAgent,
   onClose,
   onSuccess
 }: DepositModalProps) {
@@ -41,6 +42,8 @@ export function DepositModal({
 
   const walletBalance = 10000
   const gasEstimate = 2.5
+  const minDeposit = 100
+  const minBalanceWarning = 20
 
   const handleDeposit = async () => {
     setIsProcessing(true)
@@ -66,6 +69,8 @@ export function DepositModal({
     }
   }, [])
 
+  const isValidAmount = parseFloat(amount) >= minDeposit && parseFloat(amount) <= walletBalance
+
   if (isSuccess) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto p-4">
@@ -76,7 +81,7 @@ export function DepositModal({
             </div>
             <CardTitle className="text-center">Deposit Successful!</CardTitle>
             <CardDescription className="text-center">
-              {isOwnAgent 
+              {isOwnAgent
                 ? `Your funds have been deposited to ${agentName}`
                 : `You've successfully invested in ${agentName}`
               }
@@ -117,14 +122,14 @@ export function DepositModal({
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
-            <div>
+              <div>
                 <CardTitle>{isOwnAgent ? 'Deposit to Your Agent' : 'Deposit to Agent'}</CardTitle>
-              <CardDescription>
-                  {step === 'details' 
+                <CardDescription>
+                  {step === 'details'
                     ? `Review ${agentName} details before depositing`
                     : `Confirm payment to fund ${agentName}`
                   }
-              </CardDescription>
+                </CardDescription>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -185,14 +190,14 @@ export function DepositModal({
                 )}
               </div>
 
-          {!isOwnAgent && (
-            <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-sm">
-              You're investing in a public agent. Returns will be shared based on your deposit proportion.
-            </div>
-          )}
+              {!isOwnAgent && (
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-sm">
+                  You're investing in a public agent. Returns will be shared based on your deposit proportion.
+                </div>
+              )}
 
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 size="lg"
                 onClick={() => setStep('deposit')}
               >
@@ -202,61 +207,75 @@ export function DepositModal({
           ) : (
             <>
               {/* Step 2: Deposit Amount */}
-          <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="amount">Deposit Amount (USDC)</Label>
-            <div className="relative">
-              <Input
-                id="amount"
-                type="number"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pr-16"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                USDC
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Balance: ${walletBalance.toLocaleString()} USDC</span>
-              <div className="flex gap-1">
+                <div className="relative">
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder={`Min ${minDeposit}`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="pr-16"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    USDC
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Balance: ${walletBalance.toLocaleString()} USDC</span>
+                  <div className="flex gap-1">
                     <button onClick={() => setQuickAmount(25)} className="hover:text-foreground transition-colors">25%</button>
                     <button onClick={() => setQuickAmount(50)} className="hover:text-foreground transition-colors">50%</button>
                     <button onClick={() => setQuickAmount(75)} className="hover:text-foreground transition-colors">75%</button>
                     <button onClick={() => setQuickAmount(100)} className="hover:text-foreground transition-colors">100%</button>
+                  </div>
+                </div>
+
+                {amount && parseFloat(amount) < minDeposit && (
+                  <p className="text-xs text-destructive mt-1">
+                    Minimum deposit is ${minDeposit} USDC
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
+
+              <Alert variant="default" className="bg-muted/50 border-none">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs text-muted-foreground">
+                  Agents require a minimum balance of ${minBalanceWarning} to maintain active status.
+                  Streaming costs are deducted automatically.
+                </AlertDescription>
+              </Alert>
 
               {/* Payment Details Section - Matching Launch Modal Style */}
-          <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-            <div className="flex items-center justify-between mb-2">
+              <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Payment Details</span>
-              <X402Badge />
-            </div>
-            <div className="flex justify-between text-sm">
+                  <X402Badge />
+                </div>
+                <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Deposit Amount</span>
-              <span className="font-semibold">{amount || '0'} USDC</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Gas Estimate</span>
-              <span>~${gasEstimate} USDC</span>
-            </div>
-            <div className="flex justify-between text-sm pt-2 border-t">
-              <span className="font-medium">Total</span>
-              <span className="font-bold">{(parseFloat(amount || '0') + gasEstimate).toFixed(2)} USDC</span>
-            </div>
+                  <span className="font-semibold">{amount || '0'} USDC</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Gas Estimate</span>
+                  <span>~${gasEstimate} USDC</span>
+                </div>
+                <div className="flex justify-between text-sm pt-2 border-t">
+                  <span className="font-medium">Total</span>
+                  <span className="font-bold">{(parseFloat(amount || '0') + gasEstimate).toFixed(2)} USDC</span>
+                </div>
                 <p className="text-xs text-muted-foreground pt-2">
                   Transaction will be recorded on-chain via x402 protocol
                 </p>
-          </div>
+              </div>
 
-          <Button 
-            className="w-full" 
-            size="lg"
-            disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > walletBalance || isProcessing}
-            onClick={handleDeposit}
-          >
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={!isValidAmount || isProcessing}
+                onClick={handleDeposit}
+              >
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -265,7 +284,7 @@ export function DepositModal({
                 ) : (
                   'Deposit'
                 )}
-          </Button>
+              </Button>
             </>
           )}
         </CardContent>
@@ -273,4 +292,3 @@ export function DepositModal({
     </div>
   )
 }
-

@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import { Inter_Tight } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
+import { DemoControlPanel } from '@/components/demo-control-panel'
 import './globals.css'
 
-const interTight = Inter_Tight({ 
+const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: '--font-inter-tight',
   display: 'swap',
@@ -47,7 +48,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-        {children}
+          {children}
+          <DemoControlPanel />
         </ThemeProvider>
         <Analytics />
       </body>

@@ -42,25 +42,25 @@ const CustomCandlestick = (props: any) => {
   const { open, high, low, close } = payload
   const isUp = close >= open
   const color = isUp ? '#22c55e' : '#ef4444' // green-500 : red-500
-  
+
   const bodyHeight = Math.abs(close - open)
   const bodyY = Math.min(close, open)
   const wickTop = high
   const wickBottom = low
-  
+
   // Scale values to chart coordinates
   const chartHeight = height || 200
   const priceRange = high - low
   const scale = chartHeight / priceRange
-  
+
   const wickTopY = y - ((wickTop - low) * scale - chartHeight)
   const wickBottomY = y - ((wickBottom - low) * scale - chartHeight)
   const bodyTopY = y - ((bodyY + bodyHeight - low) * scale - chartHeight)
   const bodyBottomY = y - ((bodyY - low) * scale - chartHeight)
-  
+
   const candleWidth = Math.max(width * 0.6, 2)
   const wickWidth = 1
-  
+
   return (
     <g>
       {/* High-Low Wick */}
@@ -91,15 +91,14 @@ const CustomCandlestick = (props: any) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  
+
   if (active && payload && payload.length) {
     const data = payload[0].payload
     const isUp = data.close >= data.open
-    
+
     return (
-      <div className={`p-3 rounded-lg border shadow-lg ${
-        isDark ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'
-      }`}>
+      <div className={`p-3 rounded-lg border shadow-lg ${isDark ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'
+        }`}>
         <p className="text-xs font-medium mb-2 font-sans">
           {new Date(data.timestamp).toLocaleString()}
         </p>
@@ -153,12 +152,12 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
     const loadChartData = () => {
       const data = generateCandleData(selectedAsset, selectedTimeframe, 100)
       setChartData(data)
-      
+
       if (data.length > 0) {
         const latest = data[data.length - 1]
         const previous = data[data.length - 2]
         setCurrentPrice(latest.close)
-        
+
         if (previous) {
           const change = latest.close - previous.close
           const changePercent = (change / previous.close) * 100
@@ -188,10 +187,10 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
     return chartData.map((candle, index) => ({
       ...candle,
       index,
-      time: new Date(candle.timestamp).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
+      time: new Date(candle.timestamp).toLocaleTimeString('en-US', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: false 
+        hour12: false
       }),
       // Add price range for Y-axis scaling
       priceRange: candle.high - candle.low,
@@ -230,21 +229,20 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
             <span className="text-base font-sans font-bold">
               ${currentPrice.toFixed(2)}
             </span>
-            <div className={`flex items-center gap-1 ${
-              priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'
-            }`}>
+            <div className={`flex items-center gap-1 ${priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}>
               {priceChangePercent >= 0 ? (
                 <TrendingUp className="h-3 w-3" />
               ) : (
                 <TrendingDown className="h-3 w-3" />
               )}
               <span className="text-xs font-medium font-sans">
-                {priceChangePercent >= 0 ? '+' : ''}{priceChange.toFixed(2)} 
+                {priceChangePercent >= 0 ? '+' : ''}{priceChange.toFixed(2)}
                 ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
               </span>
             </div>
           </div>
-          
+
           {/* Timeframe Selector */}
           <div className="flex items-center gap-0.5">
             {timeframes.map((tf) => (
@@ -252,11 +250,10 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
                 key={tf.value}
                 variant={selectedTimeframe === tf.value ? "default" : "outline"}
                 size="sm"
-                className={`h-6 px-2 text-xs font-medium ${
-                  selectedTimeframe === tf.value 
-                    ? 'bg-primary text-primary-foreground shadow-md' 
+                className={`h-6 px-2 text-xs font-medium ${selectedTimeframe === tf.value
+                    ? 'bg-primary text-primary-foreground shadow-md'
                     : 'hover:bg-muted'
-                }`}
+                  }`}
                 onClick={() => setSelectedTimeframe(tf.value)}
               >
                 {tf.label}
@@ -265,7 +262,7 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-4 flex-1 flex flex-col min-h-0">
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
@@ -273,21 +270,21 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
               data={processedData}
               margin={{ top: 5, right: 15, left: 5, bottom: 5 }}
             >
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke={chartColors.grid} 
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={chartColors.grid}
                 opacity={0.3}
                 horizontal={true}
                 vertical={false}
               />
-              <XAxis 
+              <XAxis
                 dataKey="time"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11, fill: chartColors.axis }}
                 interval="preserveStartEnd"
               />
-              <YAxis 
+              <YAxis
                 domain={['dataMin - 10', 'dataMax + 10']}
                 axisLine={false}
                 tickLine={false}
@@ -295,15 +292,15 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
                 width={60}
               />
               <Tooltip content={<CustomTooltip />} />
-              
+
               {/* Volume bars */}
-              <Bar 
-                dataKey="volume" 
+              <Bar
+                dataKey="volume"
                 fill={isDark ? '#4b5563' : '#d1d5db'}
                 opacity={0.6}
                 yAxisId="volume"
               />
-              
+
               {/* Price line for reference */}
               <Line
                 type="monotone"
@@ -313,7 +310,7 @@ export function TradingChart({ selectedAsset }: TradingChartProps) {
                 dot={false}
                 connectNulls={false}
               />
-              
+
               {/* Custom candlesticks would go here - simplified for now */}
             </ComposedChart>
           </ResponsiveContainer>

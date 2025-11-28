@@ -22,6 +22,9 @@ export interface AgentDetailData {
   pnl: number
   winRate: number
   sharpeRatio: number
+  maxDrawdown?: number
+  avgTradeDuration?: string
+  totalTrades?: number
   totalDeposits?: number
   collateralStake?: number
   investorCount?: number
@@ -83,6 +86,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     pnl: 8247.32,
     winRate: 67.5,
     sharpeRatio: 2.3,
+    maxDrawdown: 12.5,
+    avgTradeDuration: '4h 15m',
+    totalTrades: 142,
     totalDeposits: 45640,
     collateralStake: 500,
     investorCount: 12,
@@ -243,6 +249,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     pnl: 12450.18,
     winRate: 71.2,
     sharpeRatio: 2.8,
+    maxDrawdown: 8.4,
+    avgTradeDuration: '3h 45m',
+    totalTrades: 89,
     totalDeposits: 67320,
     collateralStake: 1000,
     investorCount: 24,
@@ -388,6 +397,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     pnl: 9872.45,
     winRate: 64.8,
     sharpeRatio: 2.5,
+    maxDrawdown: 10.2,
+    avgTradeDuration: '5h 30m',
+    totalTrades: 112,
     totalDeposits: 51200,
     collateralStake: 750,
     investorCount: 16,
@@ -462,6 +474,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     pnl: 12450.75,
     winRate: 72.3,
     sharpeRatio: 2.9,
+    maxDrawdown: 9.1,
+    avgTradeDuration: '9h 20m',
+    totalTrades: 156,
     totalDeposits: 125000,
     collateralStake: 2000,
     investorCount: 45,
@@ -543,7 +558,7 @@ export function getPublicAgents(): AgentCardProps[] {
       // Check if this is a KOL agent - only Ju Ki Young Tracker
       const isKOL = agent.id === 'kol-1' || agent.name === 'Ju Ki Young Tracker'
       const kolName = isKOL ? 'Ju Ki Young' : undefined
-      
+
       return {
         id: agent.id,
         name: agent.name,

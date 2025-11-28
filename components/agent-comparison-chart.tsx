@@ -29,21 +29,27 @@ const agentColors: Record<string, string> = {
   '8': '#10b981', // Green for Grid Trader
 }
 
+interface ChartPoint {
+  date: string
+  timestamp: number
+  [key: string]: number | string
+}
+
 // Generate mock historical data based on actual agents
 const generateChartData = (agents: AgentData[]) => {
-  const data = []
+  const data: ChartPoint[] = []
   const startDate = new Date('2024-10-18')
   const points = 150
-  
+
   for (let i = 0; i < points; i++) {
     const date = new Date(startDate)
     date.setHours(date.getHours() + i * 3)
-    
-    const point: any = {
+
+    const point: ChartPoint = {
       date: date.toISOString(),
       timestamp: date.getTime(),
     }
-    
+
     agents.forEach((agent, agentIndex) => {
       // Different volatility and trend for each agent
       const baseValue = 10000
@@ -51,31 +57,31 @@ const generateChartData = (agents: AgentData[]) => {
       const trend = agent.id === 'kol-1' ? 0.25 : agentIndex === 1 ? 0.15 : agentIndex === 5 ? -0.35 : (agentIndex - 2) * 0.05
       const volatility = 0.02 + agentIndex * 0.005
       const randomWalk = Math.random() * volatility * 2 - volatility
-      
+
       if (i === 0) {
         point[agent.id] = baseValue
       } else {
-        const prevValue = data[i - 1][agent.id]
+        const prevValue = data[i - 1][agent.id] as number
         point[agent.id] = prevValue * (1 + trend / points + randomWalk)
       }
     })
-    
+
     data.push(point)
   }
-  
+
   return data
 }
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: any[]
-  label?: string
+  payload?: any
+  label?: string | number
   agents: AgentData[]
 }
 
 const CustomTooltip = ({ active, payload, label, agents }: CustomTooltipProps) => {
   const router = useRouter()
-  
+
   if (!active || !payload || payload.length === 0) return null
 
   const agent = agents.find(a => a.id === payload[0].dataKey)
@@ -85,13 +91,13 @@ const CustomTooltip = ({ active, payload, label, agents }: CustomTooltipProps) =
     <Card className="border-2 shadow-xl" style={{ borderColor: agent.color }}>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
-          <div 
-            className="h-3 w-3 rounded-full" 
+          <div
+            className="h-3 w-3 rounded-full"
             style={{ backgroundColor: agent.color }}
           />
           <p className="font-semibold text-lg">{agent.name}</p>
         </div>
-        
+
         <div className="space-y-1">
           <div className="flex justify-between gap-6">
             <span className="text-sm text-muted-foreground">Account Value:</span>
@@ -99,21 +105,21 @@ const CustomTooltip = ({ active, payload, label, agents }: CustomTooltipProps) =
           </div>
           <div className="flex justify-between gap-6">
             <span className="text-sm text-muted-foreground">Sharpe Ratio:</span>
-            <span className="font-semibold">{agent.sharpeRatio.toFixed(1)}</span>
+            <span className="font-semibold">{(agent.sharpeRatio ?? 0).toFixed(1)}</span>
           </div>
           <div className="flex justify-between gap-6">
             <span className="text-sm text-muted-foreground">Win Rate:</span>
-            <span className="font-semibold">{agent.winRate}%</span>
+            <span className="font-semibold">{agent.winRate ?? 0}%</span>
           </div>
         </div>
 
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           className="w-full"
           onClick={() => router.push(`/agent/${agent.id}`)}
         >
-            View Details
-            <ExternalLink className="ml-2 h-3 w-3" />
+          View Details
+          <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
       </CardContent>
     </Card>
@@ -137,20 +143,20 @@ export function AgentComparisonChart() {
     return publicAgents.map(agent => ({
       id: agent.id,
       name: agent.name,
-      color: agentColors[agent.id] || `#${Math.floor(Math.random()*16777215).toString(16)}`,
+      color: agentColors[agent.id] || `#${Math.floor(Math.random() * 16777215).toString(16)}`,
       currentValue: agent.funded + agent.pnl,
-      sharpeRatio: agent.sharpeRatio,
-      winRate: agent.winRate,
+      sharpeRatio: agent.sharpeRatio ?? 0,
+      winRate: agent.winRate ?? 0,
     }))
   }, [])
 
   // Generate chart data based on actual agents
   const chartData = useMemo(() => generateChartData(agents), [agents])
 
-  const filteredData = timeframe === '72h' 
-    ? chartData.slice(-24) 
+  const filteredData = timeframe === '72h'
+    ? chartData.slice(-24)
     : chartData
-  
+
   // Theme-aware colors for legend - use resolvedTheme to get actual theme (not 'system')
   const isDark = mounted && resolvedTheme === 'dark'
   const legendTextColor = isDark ? '#f3f4f6' : '#111827' // gray-100 / gray-900
@@ -209,34 +215,34 @@ export function AgentComparisonChart() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={filteredData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-              <XAxis 
-                dataKey="timestamp" 
+              <XAxis
+                dataKey="timestamp"
                 tickFormatter={(timestamp) => {
                   const date = new Date(timestamp)
                   return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
                 }}
                 stroke="hsl(var(--border))"
-                tick={{ 
+                tick={{
                   fill: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
-                  fontSize: 12 
+                  fontSize: 12
                 }}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
               />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                 stroke="hsl(var(--border))"
-                tick={{ 
+                tick={{
                   fill: isDark ? '#9ca3af' : '#6b7280', // gray-400 / gray-500
-                  fontSize: 12 
+                  fontSize: 12
                 }}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <Tooltip content={(props) => <CustomTooltip {...props} agents={agents} />} />
-              <Legend 
+              <Legend
                 content={(props) => {
                   const { payload } = props
                   if (!payload || payload.length === 0) return null
-                  
+
                   return (
                     <div className="flex flex-wrap justify-center gap-4 pt-5">
                       {payload.map((entry: any, index: number) => {
@@ -260,7 +266,7 @@ export function AgentComparisonChart() {
                   )
                 }}
               />
-              
+
               {agents.map((agent) => (
                 <Line
                   key={agent.id}
@@ -269,7 +275,7 @@ export function AgentComparisonChart() {
                   stroke={agent.color}
                   strokeWidth={2.5}
                   dot={false}
-                        activeDot={{ r: 6, strokeWidth: 2, stroke: (mounted && resolvedTheme === 'dark') ? '#1f2937' : 'white' }}
+                  activeDot={{ r: 6, strokeWidth: 2, stroke: (mounted && resolvedTheme === 'dark') ? '#1f2937' : 'white' }}
                 />
               ))}
             </LineChart>

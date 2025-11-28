@@ -1,61 +1,41 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Shield, Users, ChevronDown, ChevronUp, CheckCircle2, Clock, XCircle, Play, Pause } from 'lucide-react'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { TrendingUp, TrendingDown, Play, Pause, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { KOLBadge } from '@/components/kol-badge'
-import { SocialOracleStatus } from '@/components/social-oracle-status'
 import { useTheme } from 'next-themes'
 import { LineChart, Line, Area, ResponsiveContainer, YAxis } from 'recharts'
-import { Progress } from '@/components/ui/progress'
-
-export interface QualificationCriteria {
-  sharpeRatio: { current: number; target: number }
-  poolSize: { current: number; target: number }
-  tradingVolume: { current: number; target: number }
-  benchmarkPerformance: { current: number; target: number }
-}
 
 export interface AgentCardProps {
   id: string
   name: string
   strategy: string
-  funded: number
-  pnl: number
-  winRate: number
-  sharpeRatio: number
-  
-  // My Agents specific
-  isOwned?: boolean
-  status?: 'active' | 'paused'
-  isPublished?: boolean
-  sharpeTarget?: number
-  totalDeposits?: number
-  qualificationCriteria?: QualificationCriteria
-  performanceData?: Array<{ time: string; value: number }>
-  
-  // Public Agents specific
-  creator?: string
-  
-  // Both
-  collateralStake?: number
-  investorCount?: number
+  funded: number // Treated as Equity
+  pnl: number // 24h PnL
+  symbol?: string
+  status?: 'active' | 'paused' | 'stopped'
+  health?: 'healthy' | 'warning' | 'offline'
+
+  // Optional for My Agents but might be passed
   triggers?: string[]
   contexts?: string[]
-  
-  // KOL specific
+  performanceData?: Array<{ time: string; value: number }>
+
+  // Legacy/Unused in simplified view but kept for compatibility if needed
+  winRate?: number
+  sharpeRatio?: number
+  isOwned?: boolean
+  isPublished?: boolean
+  creator?: string
+  totalDeposits?: number
+  investorCount?: number
+  collateralStake?: number
   isKOL?: boolean
   kolName?: string
-  socialOracle?: {
-    status: 'active' | 'inactive'
-    lastUpdate: string
-    followerCount?: number
-    tradingSignals?: number
-  }
+  socialOracle?: any
+  qualificationCriteria?: any
 }
 
 export function AgentCard({
@@ -64,224 +44,107 @@ export function AgentCard({
   strategy,
   funded,
   pnl,
-  winRate,
-  sharpeRatio,
-  isOwned = false,
-  status,
-  isPublished = false,
-  sharpeTarget = 2.0,
-  totalDeposits,
-  creator,
-  collateralStake,
-  investorCount,
+  symbol = "BTC/USDC", // Default symbol
+  status = 'active',
+  health = 'healthy',
   triggers = [],
   contexts = [],
-  qualificationCriteria,
   performanceData = [],
-          isKOL = false,
-  kolName,
-  socialOracle,
 }: AgentCardProps) {
   const { theme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const isReadyToPublish = isOwned && !isPublished && sharpeRatio >= sharpeTarget
-  const [isQualificationExpanded, setIsQualificationExpanded] = useState(false)
   const router = useRouter()
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
-  // Theme-aware sparkline color for KOL agents
+
+  // Theme-aware sparkline color
   const getSparklineColor = () => {
-    if (pnl < 0) {
-      return '#ef4444' // red-500 for negative P&L
-    }
-    if (isKOL) {
-      return '#a78bfa' // violet-400 for KOL agents
-    }
-    // Use theme-aware accent color
-    const isDark = mounted && theme === 'dark'
-    return isDark ? '#22c55e' : '#10b981' // green-500 / green-600 for positive P&L
+    if (pnl < 0) return '#ef4444'
+    return theme === 'dark' ? '#22c55e' : '#10b981'
   }
-
-  const calculateProgress = () => {
-    if (!qualificationCriteria) return 0
-    const criteria = [
-      qualificationCriteria.sharpeRatio.current >= qualificationCriteria.sharpeRatio.target,
-      qualificationCriteria.poolSize.current >= qualificationCriteria.poolSize.target,
-      qualificationCriteria.tradingVolume.current >= qualificationCriteria.tradingVolume.target,
-      qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target,
-    ]
-    return (criteria.filter(Boolean).length / criteria.length) * 100
-  }
-
-  const qualificationProgress = calculateProgress()
-  const completedCriteria = qualificationCriteria ? 
-    [
-      qualificationCriteria.sharpeRatio.current >= qualificationCriteria.sharpeRatio.target,
-      qualificationCriteria.poolSize.current >= qualificationCriteria.poolSize.target,
-      qualificationCriteria.tradingVolume.current >= qualificationCriteria.tradingVolume.target,
-      qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target,
-    ].filter(Boolean).length : 0
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
-    if (
-      target.closest('button') || 
-      target.closest('a') || 
-      target.closest('[role="menuitem"]')
-    ) {
-      return
-    }
+    if (target.closest('button') || target.closest('a')) return
     router.push(`/agent/${id}`)
   }
 
-  console.log("[v0] Agent card sparkline data:", performanceData)
+  const getHealthColor = (h: string) => {
+    switch (h) {
+      case 'healthy': return 'bg-green-500'
+      case 'warning': return 'bg-yellow-500'
+      case 'offline': return 'bg-red-500'
+      default: return 'bg-gray-500'
+    }
+  }
 
   return (
-    <Card 
-      className={`overflow-hidden transition-all cursor-pointer group h-full ${
-        isKOL 
-          ? 'border-2 border-purple-500/50 bg-gradient-to-br from-purple-500/5 to-violet-500/5 hover:border-purple-500/80 hover:shadow-lg hover:shadow-purple-500/20' 
-          : 'hover:border-primary/50'
-      }`}
+    <Card
+      className="overflow-hidden transition-all cursor-pointer group h-full hover:border-primary/50"
       onClick={handleCardClick}
     >
       <CardHeader className="pb-2.5">
         <div className="flex items-center justify-between gap-3 mb-1.5">
           <div className="flex-1 flex items-center gap-3 min-w-0">
             <div className="flex-1 min-w-0">
-              <div className="mb-1.5">
-              <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
-                {name}
-              </CardTitle>
-            </div>
-            
-            <div className="flex items-center gap-1.5 flex-wrap">
-                {isKOL && <KOLBadge kolName={kolName} className="text-[10px] py-0.5 px-2 h-5" />}
-              {creator && <span className="text-xs text-muted-foreground">by {creator}</span>}
-              
-              {isOwned && status && (
+              <div className="mb-1.5 flex items-center gap-2">
+                <CardTitle className="text-2xl leading-tight group-hover:text-primary transition-colors">
+                  {name}
+                </CardTitle>
+                <div className={`h-2.5 w-2.5 rounded-full ${getHealthColor(health)} ring-2 ring-background`} title={`Health: ${health}`} />
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-[10px] py-0 px-1.5 h-5">
                   {status === 'active' ? (
                     <>
                       <Play className="mr-1 h-2.5 w-2.5" />
-                      Active
+                      Running
                     </>
                   ) : (
                     <>
                       <Pause className="mr-1 h-2.5 w-2.5" />
-                      Paused
+                      Stopped
                     </>
                   )}
                 </Badge>
-              )}
-              
-              {isPublished && (
-                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-[10px] py-0 px-1.5 h-5">
-                  Public
+
+                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-5">
+                  {symbol}
                 </Badge>
-              )}
-              
-              {isReadyToPublish && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 h-5">
-                  Ready to Publish
-                </Badge>
-              )}
+              </div>
             </div>
           </div>
-          
-            {performanceData.length > 0 && (
-              <div className="flex-shrink-0 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] flex items-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart 
-                    data={performanceData} 
-                    margin={{ top: 6, right: 4, left: 2, bottom: 6 }}
-                  >
-                    <defs>
-                      <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={getSparklineColor()} stopOpacity={0.5} />
-                        <stop offset="40%" stopColor={getSparklineColor()} stopOpacity={0.2} />
-                        <stop offset="70%" stopColor={getSparklineColor()} stopOpacity={0.05} />
-                        <stop offset="100%" stopColor={getSparklineColor()} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id={`line-fade-${id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={getSparklineColor()} stopOpacity={1} />
-                        <stop offset="60%" stopColor={getSparklineColor()} stopOpacity={1} />
-                        <stop offset="85%" stopColor={getSparklineColor()} stopOpacity={0.6} />
-                        <stop offset="100%" stopColor={getSparklineColor()} stopOpacity={0.2} />
-                      </linearGradient>
-                      <filter id={`glow-${id}`}>
-                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                        <feMerge>
-                          <feMergeNode in="coloredBlur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    <YAxis 
-                      hide 
-                      domain={['dataMin - (dataMax - dataMin) * 0.15', 'dataMax + (dataMax - dataMin) * 0.15']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      fill={`url(#gradient-${id})`}
-                      stroke="none"
-                      isAnimationActive={true}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke={`url(#line-fade-${id})`}
-                      strokeWidth={2.5}
-                      dot={(props: any) => {
-                        const { cx, cy, payload, index } = props
-                        // Only show dot at the last data point
-                        if (index === performanceData.length - 1) {
-                          return (
-                            <g key={`dot-${index}`}>
-                              <circle
-                                cx={cx}
-                                cy={cy}
-                                r={5}
-                                fill={getSparklineColor()}
-                                stroke="white"
-                                strokeWidth={2.5}
-                                filter={`url(#glow-${id})`}
-                                opacity={1}
-                              />
-                            </g>
-                          )
-                        }
-                        return null
-                      }}
-                      activeDot={{
-                        r: 5,
-                        fill: getSparklineColor(),
-                        stroke: 'white',
-                        strokeWidth: 2.5,
-                        filter: `url(#glow-${id})`
-                      }}
-                      isAnimationActive={true}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{strategy}</p>
-          
-          {isKOL && socialOracle && (
-            <div className="mt-2">
-              <SocialOracleStatus {...socialOracle} />
+
+          {performanceData.length > 0 && (
+            <div className="flex-shrink-0 w-[120px] h-[36px] flex items-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={performanceData}>
+                  <defs>
+                    <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={getSparklineColor()} stopOpacity={0.5} />
+                      <stop offset="100%" stopColor={getSparklineColor()} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    fill={`url(#gradient-${id})`}
+                    stroke="none"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke={getSparklineColor()}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
-          
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{strategy}</p>
+
           {(triggers.length > 0 || contexts.length > 0) && (
             <div className="flex flex-wrap gap-1">
               {triggers.map(trigger => (
@@ -298,23 +161,18 @@ export function AgentCard({
           )}
         </div>
       </CardHeader>
-        
+
       <CardContent className="space-y-2.5">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">Funded</p>
+            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">Total Equity</p>
             <p className="text-lg font-bold leading-tight">
               ${funded.toLocaleString()}
             </p>
-            {isPublished && totalDeposits && (
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                Total: ${totalDeposits.toLocaleString()}
-              </p>
-            )}
           </div>
-          
+
           <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">Total P&L</p>
+            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">24h P&L</p>
             <div className="flex items-center gap-1">
               {pnl >= 0 ? (
                 <TrendingUp className="h-3.5 w-3.5 text-accent" />
@@ -326,270 +184,20 @@ export function AgentCard({
               </p>
             </div>
           </div>
-          
-          <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">Win Rate</p>
-            <p className="text-lg font-bold leading-tight">{winRate}%</p>
-          </div>
-          
-          <div>
-            <p className="text-[10px] text-muted-foreground mb-0.5 leading-tight">Sharpe Ratio</p>
-            <div className="flex items-baseline gap-1">
-              <p className="text-lg font-bold leading-tight">{sharpeRatio.toFixed(2)}</p>
-              {isOwned && (
-                <span className="text-[10px] text-muted-foreground">/ {sharpeTarget.toFixed(1)}</span>
-              )}
-            </div>
-            {isOwned && sharpeRatio >= sharpeTarget && (
-              <p className="text-[10px] text-accent mt-0.5 leading-tight">Target reached!</p>
-            )}
-          </div>
         </div>
 
-        {isOwned && !isPublished && qualificationCriteria && (
-          <div 
-            className="border rounded-lg overflow-hidden"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-          >
-            <div 
-              className="p-2.5 bg-muted/30 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setIsQualificationExpanded(!isQualificationExpanded)
-              }}
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-xs font-semibold">Path to Public Agent</p>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                    {completedCriteria}/4 Complete
-                  </Badge>
-                </div>
-                
-                {!isQualificationExpanded && (
-                  <div className="flex flex-wrap gap-1">
-                    <Badge 
-                      variant={qualificationCriteria.sharpeRatio.current >= qualificationCriteria.sharpeRatio.target ? "default" : "secondary"}
-                      className="text-[10px] px-1.5 py-0 h-5"
-                    >
-                      {qualificationCriteria.sharpeRatio.current >= qualificationCriteria.sharpeRatio.target ? (
-                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
-                      ) : (
-                        <Clock className="mr-1 h-2.5 w-2.5" />
-                      )}
-                      Sharpe {qualificationCriteria.sharpeRatio.current.toFixed(1)}
-                    </Badge>
-                    <Badge 
-                      variant={qualificationCriteria.poolSize.current >= qualificationCriteria.poolSize.target ? "default" : "secondary"}
-                      className="text-[10px] px-1.5 py-0 h-5"
-                    >
-                      {qualificationCriteria.poolSize.current >= qualificationCriteria.poolSize.target ? (
-                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
-                      ) : (
-                        <Clock className="mr-1 h-2.5 w-2.5" />
-                      )}
-                      Pool ${(qualificationCriteria.poolSize.current / 1000).toFixed(1)}k
-                    </Badge>
-                    <Badge 
-                      variant={qualificationCriteria.tradingVolume.current >= qualificationCriteria.tradingVolume.target ? "default" : "secondary"}
-                      className="text-[10px] px-1.5 py-0 h-5"
-                    >
-                      {qualificationCriteria.tradingVolume.current >= qualificationCriteria.tradingVolume.target ? (
-                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
-                      ) : (
-                        <Clock className="mr-1 h-2.5 w-2.5" />
-                      )}
-                      Volume {Math.round((qualificationCriteria.tradingVolume.current / qualificationCriteria.tradingVolume.target) * 100)}%
-                    </Badge>
-                    <Badge 
-                      variant={qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target ? "default" : "secondary"}
-                      className="text-[10px] px-1.5 py-0 h-5"
-                    >
-                      {qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target ? (
-                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
-                      ) : (
-                        <XCircle className="mr-1 h-2.5 w-2.5" />
-                      )}
-                      Benchmark
-                    </Badge>
-                  </div>
-                )}
-              </div>
-              
-              {isQualificationExpanded ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
-            
-            {isQualificationExpanded && (
-              <div className="p-3 space-y-3 bg-background">
-                <div className="mb-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs font-semibold">Overall Progress</p>
-                    <p className="text-xs text-muted-foreground">{Math.round(qualificationProgress)}%</p>
-                  </div>
-                  <Progress value={qualificationProgress} className="h-2" />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      {qualificationCriteria.sharpeRatio.current >= qualificationCriteria.sharpeRatio.target ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-                      ) : (
-                        <Clock className="h-3.5 w-3.5 text-yellow-500" />
-                      )}
-                      <p className="text-xs font-medium">Sharpe Ratio</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {qualificationCriteria.sharpeRatio.current.toFixed(2)} / {qualificationCriteria.sharpeRatio.target.toFixed(1)} target
-                    </p>
-                  </div>
-                  <Progress 
-                    value={Math.min((qualificationCriteria.sharpeRatio.current / qualificationCriteria.sharpeRatio.target) * 100, 100)} 
-                    className="h-1.5"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      {qualificationCriteria.poolSize.current >= qualificationCriteria.poolSize.target ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-                      ) : (
-                        <Clock className="h-3.5 w-3.5 text-yellow-500" />
-                      )}
-                      <p className="text-xs font-medium">Minimum Pool Size</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      ${qualificationCriteria.poolSize.current.toLocaleString()} / ${qualificationCriteria.poolSize.target.toLocaleString()}
-                    </p>
-                  </div>
-                  <Progress 
-                    value={Math.min((qualificationCriteria.poolSize.current / qualificationCriteria.poolSize.target) * 100, 100)} 
-                    className="h-1.5"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      {qualificationCriteria.tradingVolume.current >= qualificationCriteria.tradingVolume.target ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-                      ) : (
-                        <Clock className="h-3.5 w-3.5 text-yellow-500" />
-                      )}
-                      <p className="text-xs font-medium">Trading Volume</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      ${qualificationCriteria.tradingVolume.current.toLocaleString()} / ${qualificationCriteria.tradingVolume.target.toLocaleString()}
-                    </p>
-                  </div>
-                  <Progress 
-                    value={Math.min((qualificationCriteria.tradingVolume.current / qualificationCriteria.tradingVolume.target) * 100, 100)} 
-                    className="h-1.5"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      {qualificationCriteria.benchmarkPerformance.current >= qualificationCriteria.benchmarkPerformance.target ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-                      ) : (
-                        <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                      <p className="text-xs font-medium">Benchmark Performance</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      +{qualificationCriteria.benchmarkPerformance.current.toFixed(1)}% vs Market +{qualificationCriteria.benchmarkPerformance.target.toFixed(1)}%
-                    </p>
-                  </div>
-                  <Progress 
-                    value={Math.min((qualificationCriteria.benchmarkPerformance.current / qualificationCriteria.benchmarkPerformance.target) * 100, 100)} 
-                    className="h-1.5"
-                  />
-                </div>
-                
-                {qualificationProgress === 100 ? (
-                  <Button size="sm" className="w-full h-7 text-xs">
-                    Publish Agent Now
-                  </Button>
-                ) : (
-                  <p className="text-xs text-center text-muted-foreground pt-1">
-                    Complete {4 - completedCriteria} more {4 - completedCriteria === 1 ? 'requirement' : 'requirements'} to publish
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {(collateralStake || investorCount) && (
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
-            {collateralStake && (
-              <div className="flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5 text-primary" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Collateral Staked</p>
-                  <p className="text-xs font-semibold leading-tight">${collateralStake} USDC</p>
-                </div>
-              </div>
-            )}
-            {investorCount !== undefined && (
-              <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Investors</p>
-                  <p className="text-xs font-semibold leading-tight">{investorCount}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex gap-1.5">
-          <Button 
-            variant="outline" 
-            size="sm" 
+        <div className="flex gap-1.5 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1 h-8 text-xs"
             onClick={(e) => {
               e.stopPropagation()
               router.push(`/agent/${id}`)
             }}
           >
-            View Details
+            Manage Agent
           </Button>
-          {isOwned && isReadyToPublish && (
-            <Button 
-              size="sm" 
-              className="flex-1 h-8 text-xs" 
-              onClick={(e) => {
-                e.stopPropagation()
-                // Handle publish action
-              }}
-            >
-              Publish Agent
-            </Button>
-          )}
-          {!isOwned && (
-            <Button 
-              size="sm" 
-              className="flex-1 h-8 text-xs" 
-              onClick={(e) => {
-                e.stopPropagation()
-                // Handle deposit action
-              }}
-            >
-              Deposit
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>

@@ -33,12 +33,12 @@ const getRankIcon = (rank: number) => {
 
 export function AgentRankingTable({ agents }: AgentRankingTableProps) {
   const router = useRouter()
-  
+
   // Get top 5 agents sorted by total P&L
   const topAgents = [...agents]
     .sort((a, b) => b.pnl - a.pnl)
     .slice(0, 5)
-  
+
   const handleRowClick = (agentId: string) => {
     router.push(`/agent/${agentId}`)
   }
@@ -55,55 +55,55 @@ export function AgentRankingTable({ agents }: AgentRankingTableProps) {
           </div>
         </div>
         <div className="flex-1 flex flex-col">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">Rank</TableHead>
-              <TableHead>Agent</TableHead>
-              <TableHead className="text-right">P&L</TableHead>
-              <TableHead className="text-right">Sharpe</TableHead>
-              <TableHead className="text-right">Win Rate</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {topAgents.map((agent, index) => {
-              const rank = index + 1
-              return (
-                <TableRow 
-                  key={agent.id} 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleRowClick(agent.id)}
-                >
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-1.5">
-                      {getRankIcon(rank)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span 
-                      className="font-semibold hover:text-primary transition-colors"
-                    >
-                      {agent.name}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className={agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}>
-                      {agent.pnl >= 0 ? '+' : ''}${agent.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge variant="outline">
-                      {agent.sharpeRatio.toFixed(2)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-sm">{agent.winRate.toFixed(1)}%</span>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">Rank</TableHead>
+                <TableHead>Agent</TableHead>
+                <TableHead className="text-right">P&L</TableHead>
+                <TableHead className="text-right">Sharpe</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topAgents.map((agent, index) => {
+                const rank = index + 1
+                return (
+                  <TableRow
+                    key={agent.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(agent.id)}
+                  >
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-1.5">
+                        {getRankIcon(rank)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className="font-semibold hover:text-primary transition-colors"
+                      >
+                        {agent.name}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className={agent.pnl >= 0 ? 'text-accent' : 'text-destructive'}>
+                        {agent.pnl >= 0 ? '+' : ''}${agent.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="outline">
+                        {(agent.sharpeRatio ?? 0).toFixed(2)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm">{(agent.winRate ?? 0).toFixed(1)}%</span>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>

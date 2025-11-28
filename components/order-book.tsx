@@ -71,7 +71,7 @@ export function OrderBook({ selectedAsset }: OrderBookProps) {
           </Badge>
         </div>
       </div>
-      
+
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header */}
         <div className="px-2 py-0.5 border-b border-border flex-shrink-0">
@@ -101,7 +101,7 @@ export function OrderBook({ selectedAsset }: OrderBookProps) {
                     className="absolute right-0 top-0 h-full bg-red-500/10 transition-all duration-300"
                     style={{ width: `${Math.min(depthPercent, 100)}%` }}
                   />
-                  
+
                   <div className="relative grid grid-cols-3 gap-2 text-[11px] leading-tight">
                     <span className="text-red-500 font-medium font-sans group-hover:text-red-400">
                       ${ask.price.toFixed(ask.price > 1 ? 2 : 6)}
@@ -151,7 +151,7 @@ export function OrderBook({ selectedAsset }: OrderBookProps) {
                     className="absolute right-0 top-0 h-full bg-green-500/10 transition-all duration-300"
                     style={{ width: `${Math.min(depthPercent, 100)}%` }}
                   />
-                  
+
                   <div className="relative grid grid-cols-3 gap-2 text-[11px] leading-tight">
                     <span className="text-green-500 font-medium font-sans group-hover:text-green-400">
                       ${bid.price.toFixed(bid.price > 1 ? 2 : 6)}

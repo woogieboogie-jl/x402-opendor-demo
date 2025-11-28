@@ -134,27 +134,27 @@ let isInitialized = false
 // Initialize data only on client side
 function initializeIfNeeded() {
   if (typeof window === 'undefined' || isInitialized) return
-  
+
   currentPrices = { ...basePrices }
   priceHistory = {}
-  
+
   Object.keys(basePrices).forEach(symbol => {
     priceHistory[symbol] = [basePrices[symbol]]
   })
-  
+
   // Generate mock positions
   generateMockPositions()
-  
+
   // Generate mock orders
   generateMockOrders()
-  
+
   isInitialized = true
 }
 
 // Generate mock positions for demo
 function generateMockPositions() {
   const symbols = ['ETH-PERP', 'BTC-PERP', 'SOL-PERP', 'AVAX-PERP', 'MATIC-PERP', 'ADA-PERP', 'DOT-PERP']
-  
+
   mockPositions = symbols.slice(0, 7).map((symbol, index) => {
     const entryPrice = basePrices[symbol] * (0.95 + Math.random() * 0.1)
     const markPrice = basePrices[symbol]
@@ -162,12 +162,12 @@ function generateMockPositions() {
     const size = 0.1 + Math.random() * 2
     const leverage = [5, 10, 25][Math.floor(Math.random() * 3)]
     const priceDiff = markPrice - entryPrice
-    const pnl = side === 'long' 
+    const pnl = side === 'long'
       ? priceDiff * size * leverage
       : -priceDiff * size * leverage
     const pnlPercent = (pnl / (entryPrice * size)) * 100
     const margin = (entryPrice * size) / leverage
-    
+
     return {
       id: `pos-${index + 1}`,
       symbol,
@@ -189,13 +189,13 @@ function generateMockOrders() {
   const symbols = ['ETH-PERP', 'BTC-PERP', 'SOL-PERP', 'AVAX-PERP', 'MATIC-PERP', 'ADA-PERP', 'DOT-PERP', 'LINK-PERP', 'UNI-PERP', 'AAVE-PERP', 'ATOM-PERP', 'NEAR-PERP']
   const statuses: Order['status'][] = ['pending', 'filled', 'partial']
   const types: Order['type'][] = ['limit', 'market', 'stop']
-  
+
   mockOrders = symbols.slice(0, 12).map((symbol, index) => {
     const price = basePrices[symbol] * (0.98 + Math.random() * 0.04)
     const size = 0.05 + Math.random() * 1
     const filled = Math.random() * size
     const status = statuses[index % statuses.length]
-    
+
     return {
       id: `order-${index + 1}`,
       symbol,
@@ -213,19 +213,19 @@ function generateMockOrders() {
 // Generate realistic price movement
 export function updatePrices(): Record<string, number> {
   initializeIfNeeded()
-  
+
   Object.keys(currentPrices).forEach(symbol => {
     const basePrice = basePrices[symbol]
     const volatility = volatilityFactors[symbol]
     const currentPrice = currentPrices[symbol]
-    
+
     // Random walk with mean reversion
     const randomChange = (Math.random() - 0.5) * volatility * basePrice
     const meanReversion = (basePrice - currentPrice) * 0.001
     const newPrice = Math.max(currentPrice + randomChange + meanReversion, basePrice * 0.5)
-    
+
     currentPrices[symbol] = newPrice
-    
+
     // Keep price history (last 100 points)
     if (!priceHistory[symbol]) priceHistory[symbol] = []
     priceHistory[symbol].push(newPrice)
@@ -233,7 +233,7 @@ export function updatePrices(): Record<string, number> {
       priceHistory[symbol].shift()
     }
   })
-  
+
   return { ...currentPrices }
 }
 
@@ -241,18 +241,18 @@ export function updatePrices(): Record<string, number> {
 export function generateMarketData(): MarketData[] {
   initializeIfNeeded()
   const now = Date.now()
-  
+
   return baseMarkets.map(market => {
     const currentPrice = currentPrices[market.symbol]
     const history = priceHistory[market.symbol] || [currentPrice]
     const price24hAgo = history.length > 24 ? history[history.length - 24] : history[0]
-    
+
     const change24h = currentPrice - price24hAgo
     const changePercent24h = (change24h / price24hAgo) * 100
     const high24h = Math.max(...history.slice(-24))
     const low24h = Math.min(...history.slice(-24))
     const volume24h = Math.random() * 10000000 + 1000000 // Random volume between 1M-11M
-    
+
     return {
       ...market,
       price: currentPrice,
@@ -271,62 +271,62 @@ export function generateOrderBook(symbol: string, depth: number = 20): OrderBook
   initializeIfNeeded()
   const currentPrice = currentPrices[symbol] || basePrices[symbol]
   const baseSpread = currentPrice * 0.0005 // 0.05% base spread
-  
+
   const bids: OrderBookEntry[] = []
   const asks: OrderBookEntry[] = []
-  
+
   let totalBids = 0
   let totalAsks = 0
-  
+
   // Generate bids (below current price) - descending order
   for (let i = 0; i < depth; i++) {
     // Create tighter spreads near the mid price, wider spreads further away
     const priceStep = baseSpread * (1 + i * 0.15) // Increasing step size
     const price = currentPrice - (baseSpread + (i * priceStep))
-    
+
     // Vary order sizes - larger orders further from mid price
     const baseSize = 0.5 + Math.random() * 3 // 0.5 to 3.5 base size
     const sizeMultiplier = 1 + (i * 0.2) // Larger orders deeper in book
     const size = baseSize * sizeMultiplier + (Math.random() * 2)
-    
+
     totalBids += size
-    
+
     bids.push({
       price: Number(price.toFixed(price > 1 ? 2 : 6)),
       size: Number(size.toFixed(4)),
       total: Number(totalBids.toFixed(4))
     })
   }
-  
+
   // Generate asks (above current price) - ascending order  
   for (let i = 0; i < depth; i++) {
     // Create tighter spreads near the mid price, wider spreads further away
     const priceStep = baseSpread * (1 + i * 0.15) // Increasing step size
     const price = currentPrice + (baseSpread + (i * priceStep))
-    
+
     // Vary order sizes - larger orders further from mid price
     const baseSize = 0.5 + Math.random() * 3 // 0.5 to 3.5 base size
     const sizeMultiplier = 1 + (i * 0.2) // Larger orders deeper in book
     const size = baseSize * sizeMultiplier + (Math.random() * 2)
-    
+
     totalAsks += size
-    
+
     asks.push({
       price: Number(price.toFixed(price > 1 ? 2 : 6)),
       size: Number(size.toFixed(4)),
       total: Number(totalAsks.toFixed(4))
     })
   }
-  
+
   // Bids should be in descending price order (highest first)
   bids.sort((a, b) => b.price - a.price)
-  
+
   // Asks should be in ascending price order (lowest first)
   asks.sort((a, b) => a.price - b.price)
-  
+
   const spreadValue = asks[0].price - bids[0].price
   const spreadPercent = (spreadValue / currentPrice) * 100
-  
+
   return {
     bids,
     asks,
@@ -341,14 +341,14 @@ export function generateRecentTrades(symbol: string, count: number = 50): Trade[
   const currentPrice = currentPrices[symbol] || basePrices[symbol]
   const trades: Trade[] = []
   const now = Date.now()
-  
+
   for (let i = 0; i < count; i++) {
     const priceVariation = (Math.random() - 0.5) * currentPrice * 0.002
     const price = currentPrice + priceVariation
     const size = Math.random() * 5 + 0.01
     const side = Math.random() > 0.5 ? 'buy' : 'sell'
     const timestamp = now - (i * 1000 * Math.random() * 60) // Random times in last hour
-    
+
     trades.push({
       id: `trade_${symbol}_${i}`,
       price: Number(price.toFixed(price > 1 ? 2 : 6)),
@@ -357,7 +357,7 @@ export function generateRecentTrades(symbol: string, count: number = 50): Trade[
       timestamp
     })
   }
-  
+
   return trades.sort((a, b) => b.timestamp - a.timestamp) // Most recent first
 }
 
@@ -367,7 +367,7 @@ export function generateCandleData(symbol: string, interval: string = '15m', cou
   const currentPrice = currentPrices[symbol] || basePrices[symbol]
   const candles: CandleData[] = []
   const now = Date.now()
-  
+
   // Interval in milliseconds
   const intervalMs = {
     '1m': 60 * 1000,
@@ -377,22 +377,22 @@ export function generateCandleData(symbol: string, interval: string = '15m', cou
     '4h': 4 * 60 * 60 * 1000,
     '1d': 24 * 60 * 60 * 1000,
   }[interval] || 15 * 60 * 1000
-  
+
   let price = currentPrice * 0.95 // Start 5% below current
-  
+
   for (let i = count - 1; i >= 0; i--) {
     const timestamp = now - (i * intervalMs)
     const open = price
-    
+
     // Generate realistic OHLC
     const volatility = volatilityFactors[symbol] || 0.02
     const change = (Math.random() - 0.5) * volatility * price
     const close = Math.max(price + change, price * 0.8)
-    
+
     const high = Math.max(open, close) * (1 + Math.random() * volatility * 0.5)
     const low = Math.min(open, close) * (1 - Math.random() * volatility * 0.5)
     const volume = Math.random() * 1000 + 100
-    
+
     candles.push({
       timestamp,
       open: Number(open.toFixed(open > 1 ? 2 : 6)),
@@ -401,10 +401,10 @@ export function generateCandleData(symbol: string, interval: string = '15m', cou
       close: Number(close.toFixed(close > 1 ? 2 : 6)),
       volume: Number(volume.toFixed(2))
     })
-    
+
     price = close // Next candle starts where this one ended
   }
-  
+
   return candles
 }
 
@@ -463,11 +463,11 @@ export function updatePositionsPnL(): Position[] {
   mockPositions = mockPositions.map(position => {
     const currentPrice = currentPrices[position.symbol] || position.markPrice
     const priceDiff = currentPrice - position.entryPrice
-    const pnl = position.side === 'long' 
+    const pnl = position.side === 'long'
       ? priceDiff * position.size * position.leverage
       : -priceDiff * position.size * position.leverage
     const pnlPercent = (pnl / (position.entryPrice * position.size)) * 100
-    
+
     return {
       ...position,
       markPrice: currentPrice,
@@ -475,7 +475,7 @@ export function updatePositionsPnL(): Position[] {
       pnlPercent: Number(pnlPercent.toFixed(2))
     }
   })
-  
+
   return [...mockPositions]
 }
 
@@ -494,7 +494,7 @@ export function initializeMockData() {
     leverage: 3,
     margin: 1425.00
   })
-  
+
   addPosition({
     symbol: 'BTC-PERP',
     side: 'short',
@@ -506,7 +506,7 @@ export function initializeMockData() {
     leverage: 2,
     margin: 3400.00
   })
-  
+
   // Add some sample orders
   addOrder({
     symbol: 'SOL-PERP',
@@ -516,7 +516,7 @@ export function initializeMockData() {
     price: 195.00,
     status: 'pending'
   })
-  
+
   addOrder({
     symbol: 'AVAX-PERP',
     side: 'sell',
@@ -543,25 +543,25 @@ const BASE_BALANCE = 10000
 // Get portfolio metrics from current positions
 export function getPortfolioMetrics(): PortfolioMetrics {
   initializeIfNeeded()
-  
+
   // Update positions P&L first
   const positions = updatePositionsPnL()
-  
+
   // Calculate trading equity (sum of all position margins)
   const tradingEquity = positions.reduce((sum, pos) => sum + pos.margin, 0)
-  
+
   // Calculate total unrealized P&L
   const totalPnl = positions.reduce((sum, pos) => sum + pos.pnl, 0)
-  
+
   // Calculate P&L percentage (based on trading equity)
   const pnlPercentage = tradingEquity > 0 ? (totalPnl / tradingEquity) * 100 : 0
-  
+
   // Available balance = base balance - trading equity (locked in positions)
   const availableBalance = Math.max(0, BASE_BALANCE - tradingEquity)
-  
+
   // Total equity = base balance + unrealized P&L
   const totalEquity = BASE_BALANCE + totalPnl
-  
+
   return {
     totalEquity: Number(totalEquity.toFixed(2)),
     tradingEquity: Number(tradingEquity.toFixed(2)),
@@ -576,31 +576,31 @@ export function getPortfolioMetrics(): PortfolioMetrics {
 // This simulates equity changes based on trading activity
 export function getPortfolioChartData(): Array<{ time: string; value: number }> {
   initializeIfNeeded()
-  
+
   const metrics = getPortfolioMetrics()
   const currentEquity = metrics.totalEquity
-  
+
   // Generate 7 data points over 24 hours
   // Start from base balance and gradually approach current equity
-  const dataPoints = []
+  const dataPoints: Array<{ time: string; value: number }> = []
   const hours = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00']
   const baseBalance = metrics.baseBalance
-  
+
   // Calculate the change from base to current
   const equityChange = currentEquity - baseBalance
-  
+
   hours.forEach((time, index) => {
     // Gradually interpolate from base balance to current equity
     const progress = index / (hours.length - 1)
     // Add some realistic variation
     const variation = (Math.random() - 0.5) * Math.abs(equityChange) * 0.1
     const value = baseBalance + (equityChange * progress) + variation
-    
+
     dataPoints.push({
       time,
       value: Number(Math.max(0, value).toFixed(2))
     })
   })
-  
+
   return dataPoints
 }

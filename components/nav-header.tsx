@@ -2,14 +2,89 @@
 
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Key, AlertTriangle } from 'lucide-react'
+import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
+import { Badge } from '@/components/ui/badge'
 
 export function NavHeader() {
   const [isConnected, setIsConnected] = useState(false)
   const [walletAddress] = useState('0x742d...4e89')
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [keyExpired, setKeyExpired] = useState(false)
+  const [showKeyModal, setShowKeyModal] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Check registration and key status
+  useEffect(() => {
+    const checkStatus = () => {
+      const registered = localStorage.getItem('orderly_registered') === 'true'
+      const expired = localStorage.getItem('orderly_key_expired') === 'true'
+
+      setIsRegistered(registered)
+      setKeyExpired(expired)
+
+      // Only simulate random expiration if already registered
+      if (registered && !expired && Math.random() > 0.7) {
+        localStorage.setItem('orderly_key_expired', 'true')
+        setKeyExpired(true)
+      }
+    }
+
+    checkStatus()
+  }, [])
+
+  const handleKeyClick = () => {
+    // If not registered or key expired, go to register page
+    if (!isRegistered || keyExpired) {
+      router.push('/register')
+    } else {
+      // Show informational modal for active key
+      setShowKeyModal(true)
+    }
+  }
+
+  const handleKeySuccess = () => {
+    setKeyExpired(false)
+    localStorage.removeItem('orderly_key_expired')
+  }
+
+  const handleWalletToggle = () => {
+    setIsConnected(!isConnected)
+  }
+
+  // Determine button state
+  const getKeyButtonState = () => {
+    if (!isRegistered) {
+      return {
+        variant: 'outline' as const,
+        icon: Key,
+        text: 'Setup Trading',
+        showBadge: false
+      }
+    }
+
+    if (keyExpired) {
+      return {
+        variant: 'outline' as const,
+        icon: AlertTriangle,
+        text: 'Renew Key',
+        showBadge: true
+      }
+    }
+
+    return {
+      variant: 'outline' as const,
+      icon: Key,
+      text: 'Trading Key',
+      showBadge: false
+    }
+  }
+
+  const buttonState = getKeyButtonState()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -21,54 +96,50 @@ export function NavHeader() {
             </div>
             <span className="text-xl font-bold">Opend&apos;Or</span>
           </Link>
-          
+
           <nav className="hidden md:flex items-center gap-6">
-            <Link 
-              href="/marketplace" 
-              className={`text-sm font-medium transition-colors relative ${
-                pathname === '/marketplace' 
-                  ? 'text-primary font-semibold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+            <Link
+              href="/marketplace"
+              className={`text-sm font-medium transition-colors relative ${pathname === '/marketplace'
+                ? 'text-primary font-semibold'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               Marketplace
               {pathname === '/marketplace' && (
                 <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
               )}
             </Link>
-            <Link 
-              href="/create" 
-              className={`text-sm font-medium transition-colors relative ${
-                pathname === '/create' 
-                  ? 'text-primary font-semibold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+            <Link
+              href="/create"
+              className={`text-sm font-medium transition-colors relative ${pathname === '/create'
+                ? 'text-primary font-semibold'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               Create Agent
               {pathname === '/create' && (
                 <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
               )}
             </Link>
-            <Link 
-              href="/my-agents" 
-              className={`text-sm font-medium transition-colors relative ${
-                pathname === '/my-agents' 
-                  ? 'text-primary font-semibold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+            <Link
+              href="/my-agents"
+              className={`text-sm font-medium transition-colors relative ${pathname === '/my-agents'
+                ? 'text-primary font-semibold'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               My Agents
               {pathname === '/my-agents' && (
                 <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-primary rounded-full" />
               )}
             </Link>
-            <Link 
-              href="/trade" 
-              className={`text-sm font-medium transition-colors relative ${
-                pathname === '/trade' 
-                  ? 'text-primary font-semibold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+            <Link
+              href="/trade"
+              className={`text-sm font-medium transition-colors relative ${pathname === '/trade'
+                ? 'text-primary font-semibold'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               Manual Trading
               {pathname === '/trade' && (
@@ -80,17 +151,45 @@ export function NavHeader() {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
+
+          {isConnected && (
+            <div className="relative">
+              <Button
+                variant={buttonState.variant}
+                size="sm"
+                className="gap-2"
+                onClick={handleKeyClick}
+              >
+                <buttonState.icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{buttonState.text}</span>
+              </Button>
+              {buttonState.showBadge && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                </span>
+              )}
+            </div>
+          )}
+
           {isConnected ? (
-            <Button variant="outline" className="font-mono text-sm">
+            <Button variant="outline" className="font-mono text-sm" onClick={handleWalletToggle}>
               {walletAddress}
             </Button>
           ) : (
-            <Button onClick={() => setIsConnected(true)}>
+            <Button onClick={handleWalletToggle}>
               Connect Wallet
             </Button>
           )}
         </div>
       </div>
+
+      <KeyRenewalModal
+        isOpen={showKeyModal}
+        onClose={() => setShowKeyModal(false)}
+        onSuccess={handleKeySuccess}
+        isExpired={keyExpired}
+      />
     </header>
   )
 }
