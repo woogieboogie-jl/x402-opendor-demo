@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, Key, Shield, AlertCircle, ArrowLeft } from 'lucide-react'
 import { WalletSignaturePrompt } from '@/components/wallet-signature-prompt'
 
-// Simulated account status enum (matches real Orderly)
+// Simulated account status enum
 enum AccountStatus {
     NotConnected = 0,
     Connected = 1,
@@ -23,7 +23,7 @@ enum AccountStatus {
 const STATUS_INFO = {
     [AccountStatus.NotConnected]: {
         label: 'Not Connected',
-        description: 'Wallet needs to be connected to Orderly',
+        description: 'Wallet needs to be connected to exchange',
         color: 'bg-gray-500',
     },
     [AccountStatus.Connected]: {
@@ -33,7 +33,7 @@ const STATUS_INFO = {
     },
     [AccountStatus.NotSignedIn]: {
         label: 'Not Signed In',
-        description: 'Need to create Orderly account',
+        description: 'Need to create trading account',
         color: 'bg-yellow-500',
     },
     [AccountStatus.SignedIn]: {
@@ -66,7 +66,7 @@ function RegisterContent() {
 
     // Simulate checking if user has expired key
     useEffect(() => {
-        const hasExpiredKey = localStorage.getItem('orderly_key_expired') === 'true'
+        const hasExpiredKey = localStorage.getItem('exchange_key_expired') === 'true'
         if (hasExpiredKey || isRenewalMode) {
             setCurrentStatus(AccountStatus.DisabledTrading)
             setIsExpiredKey(true)
@@ -97,8 +97,8 @@ function RegisterContent() {
         setCurrentStatus(AccountStatus.EnableTrading)
 
         // Clear expired key flag and mark as registered
-        localStorage.removeItem('orderly_key_expired')
-        localStorage.setItem('orderly_registered', 'true')
+        localStorage.removeItem('exchange_key_expired')
+        localStorage.setItem('exchange_registered', 'true')
 
         // Dispatch event to update other components
         window.dispatchEvent(new Event('localStorageChange'))
@@ -125,7 +125,7 @@ function RegisterContent() {
                             </div>
                             <div>
                                 <CardTitle className="text-2xl">
-                                    {isRenewalMode ? 'Renew Trading Key' : 'Register with Orderly'}
+                                    {isRenewalMode ? 'Renew Trading Key' : 'Register Trading Account'}
                                 </CardTitle>
                                 <CardDescription>
                                     {isRenewalMode
@@ -187,7 +187,7 @@ function RegisterContent() {
                                     <CheckCircle2 className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-green-700 dark:text-green-400">Orderly Account Active</h3>
+                                    <h3 className="font-medium text-green-700 dark:text-green-400">Trading Account Active</h3>
                                     <p className="text-xs text-muted-foreground">Account ID: 8BwK...2mNz</p>
                                 </div>
                             </div>
@@ -203,10 +203,10 @@ function RegisterContent() {
                             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                                     <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm">1</span>
-                                    Create Orderly Account
+                                    Create Trading Account
                                 </h3>
                                 <p className="text-sm text-muted-foreground mb-3">
-                                    First, we'll create your Orderly account on-chain. This requires one wallet signature.
+                                    First, we'll create your trading account on Solana. This requires one wallet signature.
                                 </p>
                                 <Button onClick={handleCreateAccount} className="w-full" size="lg">
                                     <Key className="mr-2 h-4 w-4" />
@@ -229,7 +229,7 @@ function RegisterContent() {
                     {/* Wallet Signature: Creating Account */}
                     {step === 'creating-account' && (
                         <WalletSignaturePrompt
-                            message="Creating Orderly Account"
+                            message="Creating Trading Account"
                             description="Please sign the registration message in your wallet"
                         />
                     )}
@@ -305,9 +305,9 @@ function RegisterContent() {
                     {/* Info Section (only show when idle) */}
                     {step === 'idle' && !isExpiredKey && (
                         <div className="bg-muted/30 border border-border rounded-lg p-4">
-                            <h4 className="font-medium mb-2">What is Orderly?</h4>
+                            <h4 className="font-medium mb-2">Why Register?</h4>
                             <p className="text-sm text-muted-foreground">
-                                Orderly is a decentralized trading infrastructure that powers your AI trading agent.
+                                Registration connects your wallet to the decentralized exchange infrastructure that powers your AI trading agent.
                                 Registration is free and only needs to be done once.
                             </p>
                         </div>

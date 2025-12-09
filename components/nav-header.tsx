@@ -21,8 +21,8 @@ export function NavHeader() {
   // Check registration and key status
   useEffect(() => {
     const checkStatus = () => {
-      const registered = localStorage.getItem('orderly_registered') === 'true'
-      const expired = localStorage.getItem('orderly_key_expired') === 'true'
+      const registered = localStorage.getItem('exchange_registered') === 'true'
+      const expired = localStorage.getItem('exchange_key_expired') === 'true'
 
       setIsRegistered(registered)
       setKeyExpired(expired)
@@ -32,7 +32,7 @@ export function NavHeader() {
 
     // Listen for storage changes (from demo control panel or other tabs)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'orderly_registered' || e.key === 'orderly_key_expired') {
+      if (e.key === 'exchange_registered' || e.key === 'exchange_key_expired') {
         checkStatus()
       }
     }
@@ -202,7 +202,7 @@ export function NavHeader() {
         onSuccess={() => {
           setShowKeyModal(false)
           setKeyExpired(false)
-          localStorage.removeItem('orderly_key_expired')
+          localStorage.removeItem('exchange_key_expired')
           window.dispatchEvent(new Event('localStorageChange'))
         }}
         isExpired={keyExpired}

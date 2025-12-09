@@ -49,8 +49,8 @@ export default function AgentDetailPage() {
 
   // Protect page - require valid trading key
   useEffect(() => {
-    const isRegistered = localStorage.getItem('orderly_registered') === 'true'
-    const isKeyExpired = localStorage.getItem('orderly_key_expired') === 'true'
+    const isRegistered = localStorage.getItem('exchange_registered') === 'true'
+    const isKeyExpired = localStorage.getItem('exchange_key_expired') === 'true'
 
     if (isKeyExpired) {
       setShowRenewalModal(true)

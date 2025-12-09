@@ -28,8 +28,8 @@ export function DemoControlPanel() {
     // Update state from localStorage
     const updateState = () => {
         if (typeof window !== 'undefined') {
-            setIsRegistered(localStorage.getItem('orderly_registered') === 'true')
-            setIsKeyExpired(localStorage.getItem('orderly_key_expired') === 'true')
+            setIsRegistered(localStorage.getItem('exchange_registered') === 'true')
+            setIsKeyExpired(localStorage.getItem('exchange_key_expired') === 'true')
         }
     }
 
@@ -83,7 +83,7 @@ export function DemoControlPanel() {
 
     const handleResetRegistration = () => {
         if (confirmResetReg) {
-            localStorage.removeItem('orderly_registered')
+            localStorage.removeItem('exchange_registered')
             window.location.reload()
         } else {
             setConfirmResetReg(true)
@@ -93,17 +93,17 @@ export function DemoControlPanel() {
 
     const handleToggleKeyExpiration = () => {
         if (isKeyExpired) {
-            localStorage.removeItem('orderly_key_expired')
+            localStorage.removeItem('exchange_key_expired')
         } else {
-            localStorage.setItem('orderly_key_expired', 'true')
+            localStorage.setItem('exchange_key_expired', 'true')
         }
         // Dispatch custom event for same-tab sync
         window.dispatchEvent(new Event('localStorageChange'))
     }
 
     const handleMarkAsRegistered = () => {
-        localStorage.setItem('orderly_registered', 'true')
-        localStorage.removeItem('orderly_key_expired')
+        localStorage.setItem('exchange_registered', 'true')
+        localStorage.removeItem('exchange_key_expired')
         // Dispatch custom event for same-tab sync
         window.dispatchEvent(new Event('localStorageChange'))
     }
@@ -234,15 +234,15 @@ export function DemoControlPanel() {
                             {showValues && (
                                 <div className="bg-muted/50 rounded-md p-2 space-y-1 font-mono text-xs">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">orderly_registered:</span>
+                                        <span className="text-muted-foreground">exchange_registered:</span>
                                         <span className="font-semibold">
-                                            {localStorage.getItem('orderly_registered') || 'null'}
+                                            {localStorage.getItem('exchange_registered') || 'null'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">orderly_key_expired:</span>
+                                        <span className="text-muted-foreground">exchange_key_expired:</span>
                                         <span className="font-semibold">
-                                            {localStorage.getItem('orderly_key_expired') || 'null'}
+                                            {localStorage.getItem('exchange_key_expired') || 'null'}
                                         </span>
                                     </div>
                                 </div>

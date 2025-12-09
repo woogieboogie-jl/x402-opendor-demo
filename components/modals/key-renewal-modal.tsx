@@ -39,7 +39,7 @@ export function KeyRenewalModal({ isOpen, onClose, onSuccess, isExpired = false 
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Key className="h-5 w-5 text-primary" />
-                        {isExpired ? 'Trading Key Expired' : 'Orderly Trading Key'}
+                        {isExpired ? 'Trading Key Expired' : 'Exchange Trading Key'}
                     </DialogTitle>
                     <DialogDescription>
                         Manage your Solana trading credentials
@@ -115,7 +115,7 @@ export function KeyRenewalModal({ isOpen, onClose, onSuccess, isExpired = false 
                             <div className="text-center space-y-1">
                                 <p className="font-medium">Key Generated Successfully</p>
                                 <p className="text-sm text-muted-foreground">
-                                    Your new Orderly trading key is active for 30 days.
+                                    Your new trading key is active for 30 days.
                                 </p>
                             </div>
                             <Button className="w-full" onClick={handleClose}>

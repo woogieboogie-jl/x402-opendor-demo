@@ -68,15 +68,15 @@ export default function CreateAgentPage() {
   const [timerInterval, setTimerInterval] = useState<TimerInterval>(14400000) // Default: 4 hours
   const [showRenewalModal, setShowRenewalModal] = useState(false)
 
-  // Check if user is registered with Orderly
+  // Check if user is registered with exchange
   useEffect(() => {
     const checkRegistration = async () => {
       setIsCheckingRegistration(true)
       // Simulate async check
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      const isRegistered = localStorage.getItem('orderly_registered') === 'true'
-      const isKeyExpired = localStorage.getItem('orderly_key_expired') === 'true'
+      const isRegistered = localStorage.getItem('exchange_registered') === 'true'
+      const isKeyExpired = localStorage.getItem('exchange_key_expired') === 'true'
 
       // If key is expired, show renewal modal instead of redirecting
       if (isKeyExpired) {
@@ -501,7 +501,7 @@ export default function CreateAgentPage() {
             <CardContent className="space-y-4">
               {isCreatingSubAccount ? (
                 <WalletSignaturePrompt
-                  message="Creating Orderly Sub-Account"
+                  message="Creating Trading Sub-Account"
                   description="Please sign the sub-account creation message in your wallet"
                 />
               ) : (
