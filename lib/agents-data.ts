@@ -467,9 +467,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
   },
   'kol-1': {
     id: 'kol-1',
-    name: 'Arthur Hayes Tracker',
+    name: 'Toly Tracker',
     creator: 'Opend\'Or Team',
-    strategy: 'Mirrors trading patterns of Arthur Hayes (BitMEX founder) - macro-driven Bitcoin trades based on Fed policy, dollar liquidity cycles, and market structure',
+    strategy: 'Mirrors insights from Anatoly Yakovenko (@aeyakovenko, Solana co-founder) - tracks SOL ecosystem momentum, network metrics, and Solana DeFi signals',
     funded: 15000,
     pnl: 12450.75,
     winRate: 72.3,
@@ -480,8 +480,8 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     totalDeposits: 125000,
     collateralStake: 2000,
     investorCount: 45,
-    triggers: ['Macro Signal', 'Liquidity Cycle', 'Fed Policy'],
-    contexts: ['Bitcoin', 'Macro', 'Social Oracle'],
+    triggers: ['Network Activity', 'DeFi Signal', 'Ecosystem Growth'],
+    contexts: ['Solana', 'DeFi', 'Social Oracle'],
     status: 'active',
     isOwned: false,
     isPublished: true,
@@ -496,25 +496,25 @@ export const allAgentsData: Record<string, AgentDetailData> = {
       { time: '24:00', value: 16500 },
     ],
     positions: [
-      { id: '1', asset: 'BTC/USD', type: 'Long', entry: 43250, current: 44120, pnl: 4350, leverage: '2x', txHash: '5vKol1...btc1' },
-      { id: '2', asset: 'BTC/USD', type: 'Long', entry: 42800, current: 44120, pnl: 6560, leverage: '3x', txHash: '5vKol2...btc2' },
+      { id: '1', asset: 'SOL/USD', type: 'Long', entry: 98.50, current: 105.20, pnl: 4350, leverage: '2x', txHash: '5vKol1...sol1' },
+      { id: '2', asset: 'SOL/USD', type: 'Long', entry: 95.80, current: 105.20, pnl: 6560, leverage: '3x', txHash: '5vKol2...sol2' },
     ],
     completedTrades: [
-      { id: '1', date: '2024-11-03 10:30', asset: 'BTC/USD', type: 'Long', entry: 43250, exit: 44120, pnl: 4350, duration: '8h 15m', txHash: '5vKol1...btc1' },
-      { id: '2', date: '2024-11-02 14:20', asset: 'BTC/USD', type: 'Long', entry: 42800, exit: 43500, pnl: 3500, duration: '12h 30m', txHash: '5vKol2...btc2' },
-      { id: '3', date: '2024-11-01 18:45', asset: 'BTC/USD', type: 'Long', entry: 42500, exit: 43200, pnl: 2800, duration: '10h 20m', txHash: '5vKol3...btc3' },
+      { id: '1', date: '2024-11-03 10:30', asset: 'SOL/USD', type: 'Long', entry: 98.50, exit: 105.20, pnl: 4350, duration: '8h 15m', txHash: '5vKol1...sol1' },
+      { id: '2', date: '2024-11-02 14:20', asset: 'SOL/USD', type: 'Long', entry: 95.80, exit: 101.50, pnl: 3500, duration: '12h 30m', txHash: '5vKol2...sol2' },
+      { id: '3', date: '2024-11-01 18:45', asset: 'SOL/USD', type: 'Long', entry: 92.00, exit: 98.20, pnl: 2800, duration: '10h 20m', txHash: '5vKol3...sol3' },
     ],
     transactions: [
       { id: '1', type: 'Creation', amount: 50, date: '2024-10-15 10:00', txHash: '5vKol...init', chain: 'Solana' },
       { id: '2', type: 'Deposit', amount: 15000, date: '2024-10-15 10:15', txHash: '5vKol...dep1', chain: 'Solana' },
-      { id: '3', type: 'Trade', amount: 4350, date: '2024-11-03 10:30', txHash: '5vKol1...btc1', chain: 'Solana' },
-      { id: '4', type: 'Trade', amount: 3500, date: '2024-11-02 14:20', txHash: '5vKol2...btc2', chain: 'Solana' },
-      { id: '5', type: 'Trade', amount: 2800, date: '2024-11-01 18:45', txHash: '5vKol3...btc3', chain: 'Solana' },
+      { id: '3', type: 'Trade', amount: 4350, date: '2024-11-03 10:30', txHash: '5vKol1...sol1', chain: 'Solana' },
+      { id: '4', type: 'Trade', amount: 3500, date: '2024-11-02 14:20', txHash: '5vKol2...sol2', chain: 'Solana' },
+      { id: '5', type: 'Trade', amount: 2800, date: '2024-11-01 18:45', txHash: '5vKol3...sol3', chain: 'Solana' },
     ],
     reasoningLog: [
-      { id: '1', time: '2024-11-03 10:30', trigger: 'Macro Signal', context: 'Arthur Hayes: Fed balance sheet expansion signals dollar liquidity injection imminent', action: 'Opened long position BTC 2x', reasoning: 'Following Arthur Hayes\'s macro thesis: Dollar liquidity expansion historically correlates with BTC rallies. RRP facility drawdown indicates risk-on environment' },
-      { id: '2', time: '2024-11-02 14:20', trigger: 'Liquidity Cycle', context: 'Arthur Hayes: Treasury General Account drawdown accelerating - $200B injection expected', action: 'Opened long position BTC 3x', reasoning: 'Social oracle signal: TGA drawdown injects liquidity into markets. Hayes predicts 15-20% BTC upside in liquidity expansion cycles' },
-      { id: '3', time: '2024-11-01 18:45', trigger: 'Fed Policy', context: 'Arthur Hayes: Fed pivot signals detected - rate cut expectations rising', action: 'Opened long position BTC 2x', reasoning: 'Social oracle consensus: Fed dovish pivot historically bullish for risk assets. Mirroring Hayes\'s "buy the pivot" strategy' },
+      { id: '1', time: '2024-11-03 10:30', trigger: 'Network Activity', context: '@aeyakovenko: Solana TPS hit new ATH - 65,000 transactions per second sustained', action: 'Opened long position SOL 2x', reasoning: 'Following Toly\'s network metrics: Record TPS indicates strong ecosystem adoption. Historical correlation: 85% probability of price appreciation within 48h after TPS milestones' },
+      { id: '2', time: '2024-11-02 14:20', trigger: 'DeFi Signal', context: '@aeyakovenko: Solana DeFi TVL surpassed $5B - Marinade and Jupiter leading growth', action: 'Opened long position SOL 3x', reasoning: 'Social oracle signal: TVL growth indicates capital inflow to Solana ecosystem. Toly\'s bullish commentary on DeFi adoption confirms momentum' },
+      { id: '3', time: '2024-11-01 18:45', trigger: 'Ecosystem Growth', context: '@aeyakovenko: Firedancer validator client approaching mainnet - major decentralization milestone', action: 'Opened long position SOL 2x', reasoning: 'Social oracle consensus: Firedancer launch reduces single-client risk. Following Toly\'s thesis on Solana infrastructure maturation' },
     ],
   },
 }
@@ -555,9 +555,9 @@ export function getPublicAgents(): AgentCardProps[] {
   return Object.values(allAgentsData)
     .filter(agent => agent.isPublished)
     .map(agent => {
-      // Check if this is a KOL agent - only Arthur Hayes Tracker
-      const isKOL = agent.id === 'kol-1' || agent.name === 'Arthur Hayes Tracker'
-      const kolName = isKOL ? 'Arthur Hayes' : undefined
+      // Check if this is a KOL agent - only Toly Tracker
+      const isKOL = agent.id === 'kol-1' || agent.name === 'Toly Tracker'
+      const kolName = isKOL ? 'Anatoly Yakovenko' : undefined
 
       return {
         id: agent.id,
