@@ -608,7 +608,7 @@ export default function AgentDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">Chain</Label>
-                    <p className="text-sm font-medium">{selectedTx.chain || 'Ethereum'}</p>
+                    <p className="text-sm font-medium">{selectedTx.chain || 'Solana'}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Timestamp</Label>

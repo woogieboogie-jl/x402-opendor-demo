@@ -41,7 +41,7 @@ export function LaunchPaymentModal({
 
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 500))
-    setTxHash('0xdef456...abc123')
+    setTxHash('4pQrSt7...wXnYz')
     setIsSuccess(true)
     setIsProcessing(false)
     setTimeout(() => {
@@ -141,7 +141,7 @@ export function LaunchPaymentModal({
               <span className="font-bold">{launchFee + gasEstimate} USDC</span>
             </div>
             <p className="text-xs text-muted-foreground pt-2">
-              Transaction will be recorded on-chain via x402 protocol
+              Transaction will be recorded on Solana via x402 protocol
             </p>
           </div>
 

@@ -11,7 +11,7 @@ import { KeyRenewalModal } from '@/components/modals/key-renewal-modal'
 
 export function NavHeader() {
   const [isConnected, setIsConnected] = useState(false)
-  const [walletAddress] = useState('0x742d...4e89')
+  const [walletAddress] = useState('7Xsw...9zBk')
   const [isRegistered, setIsRegistered] = useState(false)
   const [keyExpired, setKeyExpired] = useState(false)
   const [showKeyModal, setShowKeyModal] = useState(false)

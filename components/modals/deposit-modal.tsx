@@ -48,7 +48,7 @@ export function DepositModal({
   const handleDeposit = async () => {
     setIsProcessing(true)
     await new Promise(resolve => setTimeout(resolve, 2000))
-    setTxHash('0xabcd1234...ef5678')
+    setTxHash('5vZkPqR8...9mNxWy')
     setIsSuccess(true)
     setIsProcessing(false)
     setTimeout(() => {
@@ -266,7 +266,7 @@ export function DepositModal({
                   <span className="font-bold">{(parseFloat(amount || '0') + gasEstimate).toFixed(2)} USDC</span>
                 </div>
                 <p className="text-xs text-muted-foreground pt-2">
-                  Transaction will be recorded on-chain via x402 protocol
+                  Transaction will be recorded on Solana via x402 protocol
                 </p>
               </div>
 

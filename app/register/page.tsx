@@ -188,7 +188,7 @@ function RegisterContent() {
                                 </div>
                                 <div>
                                     <h3 className="font-medium text-green-700 dark:text-green-400">Orderly Account Active</h3>
-                                    <p className="text-xs text-muted-foreground">Account ID: 0x71C...9A21</p>
+                                    <p className="text-xs text-muted-foreground">Account ID: 8BwK...2mNz</p>
                                 </div>
                             </div>
                             <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-500/5">

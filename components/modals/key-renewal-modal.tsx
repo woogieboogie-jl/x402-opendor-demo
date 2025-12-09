@@ -42,7 +42,7 @@ export function KeyRenewalModal({ isOpen, onClose, onSuccess, isExpired = false 
                         {isExpired ? 'Trading Key Expired' : 'Orderly Trading Key'}
                     </DialogTitle>
                     <DialogDescription>
-                        Manage your Orderly Network trading credentials
+                        Manage your Solana trading credentials
                     </DialogDescription>
                 </DialogHeader>
 
