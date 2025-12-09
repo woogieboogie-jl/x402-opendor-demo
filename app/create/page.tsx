@@ -59,7 +59,7 @@ export default function CreateAgentPage() {
   const [strategy, setStrategy] = useState('')
   const [memorySize, setMemorySize] = useState<MemorySize>('32k')
   const [showSocialConfig, setShowSocialConfig] = useState(false)
-  const [twitterHandles, setTwitterHandles] = useState('elonmusk')
+  const [twitterHandles, setTwitterHandles] = useState('aeyakovenko')
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showSubAccountModal, setShowSubAccountModal] = useState(false)
   const [isCreatingSubAccount, setIsCreatingSubAccount] = useState(false)
@@ -381,7 +381,7 @@ export default function CreateAgentPage() {
                 </CardHeader>
                 <CardContent>
                   <Textarea
-                    placeholder="e.g., When Elon tweets about Doge and on-chain volume spikes by 50%, go long with 3x leverage. Exit when price increases 5% or if sentiment turns negative..."
+                    placeholder="e.g., When @aeyakovenko tweets about Solana TPS milestones and on-chain activity spikes by 50%, go long SOL with 3x leverage. Exit when price increases 5% or if network congestion detected..."
                     className="min-h-[160px] text-base"
                     value={strategy}
                     onChange={(e) => setStrategy(e.target.value)}
