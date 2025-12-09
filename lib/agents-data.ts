@@ -467,9 +467,9 @@ export const allAgentsData: Record<string, AgentDetailData> = {
   },
   'kol-1': {
     id: 'kol-1',
-    name: 'Ju Ki Young Tracker',
+    name: 'Arthur Hayes Tracker',
     creator: 'Opend\'Or Team',
-    strategy: 'Mirrors trading patterns of Ju Ki Young (CryptoQuant CEO) - tracks Bitcoin whale positions, on-chain analytics, and market sentiment signals',
+    strategy: 'Mirrors trading patterns of Arthur Hayes (BitMEX founder) - macro-driven Bitcoin trades based on Fed policy, dollar liquidity cycles, and market structure',
     funded: 15000,
     pnl: 12450.75,
     winRate: 72.3,
@@ -480,8 +480,8 @@ export const allAgentsData: Record<string, AgentDetailData> = {
     totalDeposits: 125000,
     collateralStake: 2000,
     investorCount: 45,
-    triggers: ['Whale Movement', 'On-chain Signal', 'Social Consensus'],
-    contexts: ['Bitcoin', 'On-chain', 'Social Oracle'],
+    triggers: ['Macro Signal', 'Liquidity Cycle', 'Fed Policy'],
+    contexts: ['Bitcoin', 'Macro', 'Social Oracle'],
     status: 'active',
     isOwned: false,
     isPublished: true,
@@ -496,25 +496,25 @@ export const allAgentsData: Record<string, AgentDetailData> = {
       { time: '24:00', value: 16500 },
     ],
     positions: [
-      { id: '1', asset: 'BTC/USD', type: 'Long', entry: 43250, current: 44120, pnl: 4350, leverage: '2x', txHash: '0xkol1...btc1' },
-      { id: '2', asset: 'BTC/USD', type: 'Long', entry: 42800, current: 44120, pnl: 6560, leverage: '3x', txHash: '0xkol2...btc2' },
+      { id: '1', asset: 'BTC/USD', type: 'Long', entry: 43250, current: 44120, pnl: 4350, leverage: '2x', txHash: '5vKol1...btc1' },
+      { id: '2', asset: 'BTC/USD', type: 'Long', entry: 42800, current: 44120, pnl: 6560, leverage: '3x', txHash: '5vKol2...btc2' },
     ],
     completedTrades: [
-      { id: '1', date: '2024-11-03 10:30', asset: 'BTC/USD', type: 'Long', entry: 43250, exit: 44120, pnl: 4350, duration: '8h 15m', txHash: '0xkol1...btc1' },
-      { id: '2', date: '2024-11-02 14:20', asset: 'BTC/USD', type: 'Long', entry: 42800, exit: 43500, pnl: 3500, duration: '12h 30m', txHash: '0xkol2...btc2' },
-      { id: '3', date: '2024-11-01 18:45', asset: 'BTC/USD', type: 'Long', entry: 42500, exit: 43200, pnl: 2800, duration: '10h 20m', txHash: '0xkol3...btc3' },
+      { id: '1', date: '2024-11-03 10:30', asset: 'BTC/USD', type: 'Long', entry: 43250, exit: 44120, pnl: 4350, duration: '8h 15m', txHash: '5vKol1...btc1' },
+      { id: '2', date: '2024-11-02 14:20', asset: 'BTC/USD', type: 'Long', entry: 42800, exit: 43500, pnl: 3500, duration: '12h 30m', txHash: '5vKol2...btc2' },
+      { id: '3', date: '2024-11-01 18:45', asset: 'BTC/USD', type: 'Long', entry: 42500, exit: 43200, pnl: 2800, duration: '10h 20m', txHash: '5vKol3...btc3' },
     ],
     transactions: [
-      { id: '1', type: 'Creation', amount: 50, date: '2024-10-15 10:00', txHash: '0xkol...init', chain: 'Solana' },
-      { id: '2', type: 'Deposit', amount: 15000, date: '2024-10-15 10:15', txHash: '0xkol...dep1', chain: 'Solana' },
-      { id: '3', type: 'Trade', amount: 4350, date: '2024-11-03 10:30', txHash: '0xkol1...btc1', chain: 'Solana' },
-      { id: '4', type: 'Trade', amount: 3500, date: '2024-11-02 14:20', txHash: '0xkol2...btc2', chain: 'Solana' },
-      { id: '5', type: 'Trade', amount: 2800, date: '2024-11-01 18:45', txHash: '0xkol3...btc3', chain: 'Solana' },
+      { id: '1', type: 'Creation', amount: 50, date: '2024-10-15 10:00', txHash: '5vKol...init', chain: 'Solana' },
+      { id: '2', type: 'Deposit', amount: 15000, date: '2024-10-15 10:15', txHash: '5vKol...dep1', chain: 'Solana' },
+      { id: '3', type: 'Trade', amount: 4350, date: '2024-11-03 10:30', txHash: '5vKol1...btc1', chain: 'Solana' },
+      { id: '4', type: 'Trade', amount: 3500, date: '2024-11-02 14:20', txHash: '5vKol2...btc2', chain: 'Solana' },
+      { id: '5', type: 'Trade', amount: 2800, date: '2024-11-01 18:45', txHash: '5vKol3...btc3', chain: 'Solana' },
     ],
     reasoningLog: [
-      { id: '1', time: '2024-11-03 10:30', trigger: 'Whale Movement', context: 'Ju Ki Young: Large Bitcoin whale accumulation detected - 15,000 BTC moved to cold storage', action: 'Opened long position BTC 2x', reasoning: 'Following Ju Ki Young\'s analysis: Whale accumulation pattern indicates strong bullish sentiment. Historical correlation: 80% probability of 3-5% price increase within 24h' },
-      { id: '2', time: '2024-11-02 14:20', trigger: 'On-chain Signal', context: 'Ju Ki Young: Exchange outflow spike - 8,500 BTC withdrawn from exchanges', action: 'Opened long position BTC 3x', reasoning: 'Social oracle signal: Exchange outflow indicates accumulation phase. Following CryptoQuant CEO\'s trading logic' },
-      { id: '3', time: '2024-11-01 18:45', trigger: 'Social Consensus', context: 'Ju Ki Young: Bitcoin MVRV ratio suggests undervaluation zone', action: 'Opened long position BTC 2x', reasoning: 'Social oracle consensus: MVRV ratio below 1.5 indicates buying opportunity. Mirroring KOL trading pattern' },
+      { id: '1', time: '2024-11-03 10:30', trigger: 'Macro Signal', context: 'Arthur Hayes: Fed balance sheet expansion signals dollar liquidity injection imminent', action: 'Opened long position BTC 2x', reasoning: 'Following Arthur Hayes\'s macro thesis: Dollar liquidity expansion historically correlates with BTC rallies. RRP facility drawdown indicates risk-on environment' },
+      { id: '2', time: '2024-11-02 14:20', trigger: 'Liquidity Cycle', context: 'Arthur Hayes: Treasury General Account drawdown accelerating - $200B injection expected', action: 'Opened long position BTC 3x', reasoning: 'Social oracle signal: TGA drawdown injects liquidity into markets. Hayes predicts 15-20% BTC upside in liquidity expansion cycles' },
+      { id: '3', time: '2024-11-01 18:45', trigger: 'Fed Policy', context: 'Arthur Hayes: Fed pivot signals detected - rate cut expectations rising', action: 'Opened long position BTC 2x', reasoning: 'Social oracle consensus: Fed dovish pivot historically bullish for risk assets. Mirroring Hayes\'s "buy the pivot" strategy' },
     ],
   },
 }
@@ -555,9 +555,9 @@ export function getPublicAgents(): AgentCardProps[] {
   return Object.values(allAgentsData)
     .filter(agent => agent.isPublished)
     .map(agent => {
-      // Check if this is a KOL agent - only Ju Ki Young Tracker
-      const isKOL = agent.id === 'kol-1' || agent.name === 'Ju Ki Young Tracker'
-      const kolName = isKOL ? 'Ju Ki Young' : undefined
+      // Check if this is a KOL agent - only Arthur Hayes Tracker
+      const isKOL = agent.id === 'kol-1' || agent.name === 'Arthur Hayes Tracker'
+      const kolName = isKOL ? 'Arthur Hayes' : undefined
 
       return {
         id: agent.id,
